@@ -23,11 +23,11 @@ function timeAgo(dateStr: string) {
 }
 
 const QUOTES = [
-  'The only bad workout is the one that didn\'t happen.',
+  "The only bad workout is the one that didn't happen.",
   'Push yourself — no one else is going to do it for you.',
   'The pain you feel today is the strength you feel tomorrow.',
   'Every rep counts. Every day counts.',
-  'Your body can stand almost anything. It\'s your mind you have to convince.',
+  "Your body can stand almost anything. It's your mind you have to convince.",
   'Discipline is doing it even when you don\'t feel like it.',
   'Champions are made in the moments they want to quit.',
   'Be stronger than your excuses.',
@@ -42,7 +42,7 @@ const QUOTES = [
   'No excuses. No shortcuts. No regrets.',
   'Strength is built outside the comfort zone.',
   'Show up. Even on the hard days.',
-  'You\'re one workout away from a better mood.',
+  "You're one workout away from a better mood.",
 ];
 
 function dailyQuote() {
@@ -76,9 +76,9 @@ function buildWeekStrip(sessions: WorkoutSession[]) {
 }
 
 export default function DashboardPage() {
-  const navigate    = useNavigate();
-  const { user }    = useAuthStore();
-  const isOnline    = useOnlineStatus();
+  const navigate  = useNavigate();
+  const { user }  = useAuthStore();
+  const isOnline  = useOnlineStatus();
 
   const {
     syncPending, sessionId, startedAt, exercises,
@@ -94,7 +94,7 @@ export default function DashboardPage() {
   const [deleting,        setDeleting]        = useState(false);
   const [syncing,         setSyncing]         = useState(false);
   const [syncError,       setSyncError]       = useState('');
-  const syncingRef = useRef(false); // prevent double-fire
+  const syncingRef = useRef(false);
 
   const load = useCallback(async () => {
     try {
@@ -112,7 +112,6 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Auto-sync pending workout when back online
   const doSync = useCallback(async () => {
     if (!syncPending || !sessionId || !startedAt || syncingRef.current) return;
     syncingRef.current = true;
@@ -130,26 +129,25 @@ export default function DashboardPage() {
     try {
       await sessionsApi.complete(sessionId, { durationSeconds, setLogs });
       clearWorkout();
-      await load(); // refresh dashboard stats
+      await load();
     } catch (err: any) {
       setSyncError(err.message || 'Sync failed — will retry when online');
-      setSyncPending(true); // keep pending
+      setSyncPending(true);
     } finally {
       setSyncing(false);
       syncingRef.current = false;
     }
   }, [syncPending, sessionId, startedAt, exercises]);
 
-  // Trigger sync automatically when connection is restored
   useEffect(() => {
     if (isOnline && syncPending) { doSync(); }
   }, [isOnline, syncPending]);
 
-  async function handleDeleteSession(sessionId: string) {
+  async function handleDeleteSession(sid: string) {
     setDeleting(true);
     try {
-      await sessionsApi.delete(sessionId);
-      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      await sessionsApi.delete(sid);
+      setSessions((prev) => prev.filter((s) => s.id !== sid));
       setStats((prev) => prev ? { ...prev, totalWorkouts: Math.max(0, prev.totalWorkouts - 1) } : prev);
     } finally {
       setDeleting(false);
@@ -159,7 +157,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="ft-loader">
+        <div className="ft-loader-dot" />
         <span className="mono-tag">Loading…</span>
       </div>
     );
@@ -169,43 +168,36 @@ export default function DashboardPage() {
   const doneDays   = week.filter((d) => d.on).length;
   const recentSess = sessions.slice(0, 5);
 
-  return (
-    <div className="ft-screen" style={{ paddingBottom: 'var(--nav-safe)' }}>
+  const firstName = user?.name ? user.name.split(' ')[0] : null;
 
-      {/* Offline / sync-pending banner */}
+  return (
+    <div className="ft-screen animate-fade-in" style={{ paddingBottom: 'var(--nav-safe)' }}>
+
+      {/* Offline / sync banner */}
       {(syncPending || !isOnline) && (
-        <div style={{
-          background: syncPending && isOnline ? 'oklch(0.5 0.18 145)' : 'oklch(0.55 0.18 60)',
-          color: 'white',
-          padding: '10px 20px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {syncing ? (
-              <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
-                style={{ animation: 'spin 1s linear infinite' }}>
-                <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
-              </svg>
-            ) : (
-              <svg width={12} height={12} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
-              </svg>
-            )}
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.05em' }}>
-              {syncing
-                ? 'SYNCING WORKOUT…'
-                : syncPending && isOnline
-                  ? 'WORKOUT SAVED — SYNCING'
-                  : syncPending
-                    ? 'OFFLINE — WORKOUT SAVED LOCALLY'
-                    : 'OFFLINE'}
-            </span>
-          </div>
+        <div className={`banner ${syncPending && isOnline ? 'banner-success' : 'banner-warning'}`}>
+          {syncing ? (
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+              style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          ) : (
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+              <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/>
+            </svg>
+          )}
+          <span style={{ flex: 1 }}>
+            {syncing
+              ? 'SYNCING WORKOUT…'
+              : syncPending && isOnline ? 'WORKOUT SAVED — SYNCING'
+              : syncPending ? 'OFFLINE — WORKOUT SAVED LOCALLY'
+              : 'OFFLINE'}
+          </span>
           {syncPending && !syncing && isOnline && (
             <button onClick={doSync} style={{
-              background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 4,
+              background: 'rgba(255,255,255,0.22)', border: 'none', borderRadius: 5,
               color: 'white', fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em',
-              padding: '4px 8px', cursor: 'pointer',
+              padding: '4px 9px', cursor: 'pointer', flexShrink: 0,
             }}>
               SYNC NOW
             </button>
@@ -213,43 +205,37 @@ export default function DashboardPage() {
         </div>
       )}
       {syncError && (
-        <div style={{ padding: '6px 20px', background: 'oklch(0.55 0.22 25 / 0.1)', fontFamily: 'var(--mono)', fontSize: 10, color: 'oklch(0.55 0.22 25)' }}>
+        <div style={{ padding: '7px 20px', background: 'var(--danger-soft)', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--danger)' }}>
           {syncError}
         </div>
       )}
 
-      {/* Greeting + quote card */}
-      <div style={{ padding: '16px 20px 20px' }}>
-        <div style={{
-          fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em',
-          textTransform: 'uppercase', color: 'var(--ink-3)',
-        }}>
-          {user?.name ? `Hey, ${user.name.split(' ')[0]}` : 'Hey'}
+      {/* Greeting */}
+      <div style={{ padding: '18px 20px 16px' }}>
+        <div className="mono-tag" style={{ marginBottom: 4 }}>
+          {firstName ? `Hey, ${firstName}` : 'Hey'}
         </div>
 
+        {/* Daily quote card */}
         <div className="surface" style={{
-          marginTop: 10,
-          padding: '14px 16px',
-          display: 'flex', gap: 12, alignItems: 'flex-start',
+          padding: '13px 15px',
+          display: 'flex', gap: 11, alignItems: 'flex-start',
         }}>
-          {/* Quote mark */}
-          <svg width={18} height={14} viewBox="0 0 18 14" fill="currentColor"
+          <svg width={17} height={13} viewBox="0 0 18 14" fill="currentColor"
             style={{ color: 'var(--ink-4)', flexShrink: 0, marginTop: 1 }}>
             <path d="M0 14V8.4C0 3.6 3 1 9 0l1.35 1.8C7.2 2.6 5.55 4 5.1 6H8V14H0zm10 0V8.4C10 3.6 13 1 19 0l1.35 1.8C17.2 2.6 15.55 4 15.1 6H18V14h-8z"/>
           </svg>
           <p style={{
-            margin: 0,
-            fontFamily: 'var(--sans)', fontSize: 13,
-            fontStyle: 'italic', color: 'var(--ink-2)',
-            lineHeight: 1.55,
+            margin: 0, fontFamily: 'var(--sans)', fontSize: 13,
+            fontStyle: 'italic', color: 'var(--ink-2)', lineHeight: 1.55,
           }}>
             {dailyQuote()}
           </p>
         </div>
       </div>
 
-      {/* Week strip — days with workouts are tappable */}
-      <div style={{ padding: '0 20px 24px' }}>
+      {/* Week strip */}
+      <div style={{ padding: '0 20px 22px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
           <span className="mono-tag">Last 7 days</span>
           <span className="mono-tag">{doneDays}/7 sessions</span>
@@ -262,18 +248,20 @@ export default function DashboardPage() {
                 border: d.today ? '1.5px solid var(--ink)' : '1px solid var(--border)',
                 background: d.on ? 'var(--ink)' : d.today ? 'var(--paper-2)' : 'transparent',
                 color: d.on ? 'var(--paper)' : 'var(--ink)',
-                borderRadius: 'var(--r-1)', padding: '7px 0 6px',
+                borderRadius: 'var(--r-1)', padding: '8px 0 7px',
                 textAlign: 'center', position: 'relative',
                 cursor: d.sessionId ? 'pointer' : 'default',
                 boxShadow: d.on ? 'var(--shadow-sm)' : 'none',
-                transition: 'transform 100ms ease',
+                transition: 'transform 100ms ease, box-shadow 100ms ease',
               }}>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.04em',
-                opacity: d.on ? 0.55 : d.today ? 0.7 : 0.45 }}>{d.letter}</div>
-              <div className="bignum" style={{ fontSize: 15, marginTop: 2 }}>{d.num}</div>
+              <div style={{
+                fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.04em',
+                opacity: d.on ? 0.55 : d.today ? 0.7 : 0.45,
+              }}>{d.letter}</div>
+              <div className="bignum" style={{ fontSize: 16, marginTop: 2 }}>{d.num}</div>
               {d.on && (
                 <div style={{
-                  position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)',
+                  position: 'absolute', bottom: 5, left: '50%', transform: 'translateX(-50%)',
                   width: 4, height: 4, borderRadius: '50%', background: 'var(--lime)',
                 }} />
               )}
@@ -283,16 +271,24 @@ export default function DashboardPage() {
       </div>
 
       {/* Plans */}
-      <div style={{ padding: '0 20px 24px' }}>
+      <div style={{ padding: '0 20px 22px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Programs</h3>
+          <h3 className="section-title">Programs</h3>
           <span className="mono-tag">{plans.length} active</span>
         </div>
 
         {plans.length === 0 ? (
-          <div style={{ border: '1px dashed var(--hair)', borderRadius: 8, padding: '36px 20px', textAlign: 'center' }}>
-            <p className="mono-tag" style={{ marginBottom: 16 }}>No plans yet</p>
-            <button onClick={() => navigate('/setup')} className="block-btn" style={{ maxWidth: 200, margin: '0 auto' }}>
+          <div className="empty-state" style={{
+            border: '1px dashed var(--border)', borderRadius: 'var(--r-2)',
+            padding: '36px 20px',
+          }}>
+            <div className="empty-state-icon">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </div>
+            <p className="mono-tag" style={{ margin: 0 }}>No plans yet</p>
+            <button onClick={() => navigate('/setup')} className="block-btn" style={{ maxWidth: 180, margin: '0 auto' }}>
               <span>Create first plan</span>
             </button>
           </div>
@@ -308,7 +304,9 @@ export default function DashboardPage() {
                     flex: 1, minWidth: 0, background: 'none', border: 'none', cursor: 'pointer',
                     textAlign: 'left', padding: '14px 12px 14px 14px',
                   }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em' }}>{plan.name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+                      {plan.name}
+                    </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 8px', marginTop: 5 }}>
                       <span className="mono-tag">{plan.exercise_count} exercises</span>
                       <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>·</span>
@@ -324,11 +322,13 @@ export default function DashboardPage() {
                       display: 'flex', alignItems: 'center', gap: 5,
                       background: 'var(--ink)', color: 'var(--paper)',
                       border: 'none', borderRadius: 'var(--r-1)',
-                      padding: '8px 13px', fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                      padding: '9px 14px', fontFamily: 'var(--sans)',
+                      fontSize: 12, fontWeight: 700, cursor: 'pointer',
                       boxShadow: 'var(--shadow-xs)',
+                      transition: 'box-shadow var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease-spring)',
                     }}>
                       Start
-                      <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12h14M13 6l6 6-6 6"/>
                       </svg>
                     </button>
@@ -338,10 +338,11 @@ export default function DashboardPage() {
             </div>
 
             <button onClick={() => navigate('/setup')} style={{
-              width: '100%', marginTop: 8, height: 40,
+              width: '100%', marginTop: 8, height: 42,
               background: 'transparent', border: '1px dashed var(--border)', borderRadius: 'var(--r-2)',
               fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em',
               textTransform: 'uppercase', color: 'var(--ink-3)', cursor: 'pointer',
+              transition: 'background var(--duration-fast) var(--ease)',
             }}>
               + Add New Plan
             </button>
@@ -353,26 +354,30 @@ export default function DashboardPage() {
       {recentSess.length > 0 && (
         <div style={{ padding: '0 20px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-            <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Recent Workouts</h3>
+            <h3 className="section-title">Recent Workouts</h3>
             {sessions.length > 5 && (
               <button onClick={() => setShowAllSessions(true)} className="mono-tag" style={{
                 background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-2)',
-                textDecoration: 'underline', textUnderlineOffset: 2, padding: 0,
+                textDecoration: 'underline', textUnderlineOffset: 3, padding: 0,
               }}>See all</button>
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {recentSess.map((s) => (
               <div key={s.id} className="card" style={{
-                display: 'flex', alignItems: 'center', gap: 12, overflow: 'hidden',
+                display: 'flex', alignItems: 'center', overflow: 'hidden',
                 borderLeft: `3px solid ${s.plan_color || 'var(--ink)'}`,
               }}>
                 <button onClick={() => navigate(`/session/${s.id}`)} style={{
                   flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column',
-                  background: 'none', border: 'none', cursor: 'pointer', padding: '13px 10px 13px 14px',
-                  textAlign: 'left',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: '13px 10px 13px 14px', textAlign: 'left',
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--ink)' }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 700, letterSpacing: '-0.01em',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    color: 'var(--ink)',
+                  }}>
                     {s.plan_name}
                   </div>
                   <div className="mono-tag" style={{ marginTop: 3, textTransform: 'none' }}>
@@ -380,11 +385,15 @@ export default function DashboardPage() {
                   </div>
                 </button>
                 <button onClick={() => setDeleteConfirmId(s.id)} style={{
-                  flexShrink: 0, height: 28, width: 28, background: 'transparent', color: 'var(--ink-4)',
-                  border: '1px solid var(--border)', borderRadius: 'var(--r-xs)', cursor: 'pointer',
+                  flexShrink: 0, height: 30, width: 30, background: 'transparent',
+                  color: 'var(--ink-4)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--r-1)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12,
+                  transition: 'background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease)',
                 }}>
-                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
+                    <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                  </svg>
                 </button>
               </div>
             ))}
@@ -392,43 +401,47 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* All sessions drawer */}
+      {/* Empty state */}
+      {recentSess.length === 0 && plans.length > 0 && (
+        <div style={{ padding: '0 20px 24px' }}>
+          <div style={{ border: '1px dashed var(--border)', borderRadius: 'var(--r-2)', padding: '28px 20px', textAlign: 'center' }}>
+            <p className="mono-tag" style={{ color: 'var(--ink-4)', margin: 0 }}>
+              No workouts yet — start your first session above
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* All sessions sheet */}
       {showAllSessions && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-          onClick={() => setShowAllSessions(false)}
-        >
+        <div className="ft-sheet-overlay" onClick={() => setShowAllSessions(false)}>
           <div
+            className="ft-sheet"
+            style={{ maxHeight: '80dvh', display: 'flex', flexDirection: 'column', padding: 0 }}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'var(--paper)', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-              width: '100%', maxWidth: 430, maxHeight: '80dvh',
-              display: 'flex', flexDirection: 'column',
-            }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 20px 14px', flexShrink: 0 }}>
-              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 20px 14px', flexShrink: 0 }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-0.03em' }}>
                 All Workouts
               </h2>
-              <button onClick={() => setShowAllSessions(false)} style={{
-                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)',
-                fontFamily: 'var(--mono)', fontSize: 14,
-              }}>✕</button>
+              <button onClick={() => setShowAllSessions(false)} className="icon-btn" style={{ width: 32, height: 32 }}>
+                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
             </div>
-            <div style={{ overflowY: 'auto', padding: '0 20px 32px' }}>
+            <div style={{ overflowY: 'auto', padding: '0 20px 32px', flex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {sessions.map((s) => (
                   <div
                     key={s.id}
                     onClick={() => { setShowAllSessions(false); navigate(`/session/${s.id}`); }}
-                    className="card"
+                    className="card card-interactive"
                     style={{
-                      display: 'flex', alignItems: 'center', cursor: 'pointer', overflow: 'hidden',
+                      display: 'flex', alignItems: 'center', overflow: 'hidden',
                       borderLeft: `3px solid ${s.plan_color || 'var(--ink)'}`,
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0, padding: '13px 10px 13px 14px' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--ink)' }}>
                         {s.plan_name}
                       </div>
                       <div className="mono-tag" style={{ marginTop: 3, textTransform: 'none' }}>

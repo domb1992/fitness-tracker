@@ -3,6 +3,50 @@ import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
 import { User, TrainingPlan, ActiveExercise } from '../types';
 
+// ─── Theme Store ──────────────────────────────────────────────────────────────
+
+export type ThemeChoice = 'light' | 'dark' | 'system';
+
+interface ThemeState {
+  theme: ThemeChoice;
+  setTheme: (t: ThemeChoice) => void;
+  applyTheme: () => void;
+}
+
+function resolveTheme(choice: ThemeChoice): 'light' | 'dark' {
+  if (choice === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return choice;
+}
+
+function applyThemeToDOM(choice: ThemeChoice) {
+  document.documentElement.setAttribute('data-theme', resolveTheme(choice));
+}
+
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set, get) => ({
+      theme: 'system',
+
+      setTheme: (t) => {
+        set({ theme: t });
+        applyThemeToDOM(t);
+      },
+
+      applyTheme: () => {
+        applyThemeToDOM(get().theme);
+      },
+    }),
+    {
+      name: 'fittrack-theme',
+      onRehydrateStorage: () => (state) => {
+        if (state) applyThemeToDOM(state.theme);
+      },
+    }
+  )
+);
+
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 
 interface AuthState {

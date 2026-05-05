@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useAuthStore } from './store/store';
+import { useAuthStore, useThemeStore } from './store/store';
 import { supabase } from './lib/supabase';
 import AuthPage            from './pages/AuthPage';
 import SetupPage           from './pages/SetupPage';
@@ -30,10 +30,8 @@ function AuthEventHandler() {
 
 function Spinner() {
   return (
-    <div style={{
-      minHeight: '100dvh', background: 'var(--paper)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
+    <div className="ft-loader">
+      <div className="ft-loader-dot" />
       <span className="mono-tag">Loading…</span>
     </div>
   );
@@ -48,8 +46,18 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const init = useAuthStore((s) => s.init);
+  const init       = useAuthStore((s) => s.init);
+  const applyTheme = useThemeStore((s) => s.applyTheme);
+
   useEffect(() => { init(); }, [init]);
+  useEffect(() => {
+    applyTheme();
+    // Re-apply when system preference changes
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyTheme();
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [applyTheme]);
 
   return (
     <ErrorBoundary>

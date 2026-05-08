@@ -1,179 +1,154 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authApi } from '../api/client';
 import { supabase } from '../lib/supabase';
+import { Button, Input, Card, Typography, Badge } from '../components/ui';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from     = (location.state as any)?.from?.pathname || '/dashboard';
 
-  const [mode,         setMode]         = useState<'login' | 'register'>('login');
-  const [loading,      setLoading]      = useState(false);
-  const [error,        setError]        = useState('');
-  const [info,         setInfo]         = useState('');
-  const [form,         setForm]         = useState({ name: '', email: '', password: '' });
-  const [resetSending, setResetSending] = useState(false);
+  const [mode,      setMode]      = useState<'login' | 'signup'>('login');
+  const [name,      setName]      = useState('');
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+  const [message,   setMessage]   = useState('');
 
-  const field = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  // Handle redirect if already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) navigate('/dashboard', { replace: true });
+    });
+  }, [navigate]);
 
-  async function handleForgotPassword() {
-    if (!form.email) { setError('Enter your email address first'); return; }
-    setResetSending(true); setError('');
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-        redirectTo: `${window.location.origin}/update-password`,
-      });
-      if (error) throw error;
-      setInfo('Check your email — a password reset link has been sent.');
-    } catch (err: any) {
-      setError(err.message || 'Failed to send reset email');
-    } finally {
-      setResetSending(false);
-    }
-  }
-
-  async function handleSubmit(e: FormEvent) {
+  async function handleAuth(e: React.FormEvent) {
     e.preventDefault();
-    setError(''); setInfo('');
-    setLoading(true);
+    setLoading(true); setError(''); setMessage('');
+
     try {
       if (mode === 'login') {
-        await authApi.login(form.email, form.password);
-        // onAuthStateChange in store fires automatically → navigate
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        const from = (location.state as any)?.from?.pathname || '/dashboard';
         navigate(from, { replace: true });
       } else {
-        const result = await authApi.register(form.email, form.password, form.name);
-        if (result.session) {
-          navigate(from, { replace: true });
-        } else {
-          setInfo('Check your email to confirm your account, then sign in.');
-          setMode('login');
-        }
+        const { error } = await supabase.auth.signUp({
+          email, password,
+          options: {
+            data: { name },
+            emailRedirectTo: window.location.origin + '/auth',
+          },
+        });
+        if (error) throw error;
+        setMessage('Success! Check your email to confirm your account.');
       }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{
-      minHeight: '100dvh', background: 'var(--paper)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '24px 24px 48px',
-    }}>
-      <div style={{ width: '100%', maxWidth: 360 }}>
-
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 56, height: 56, background: 'var(--ink)',
-            borderRadius: 'var(--r-2)', marginBottom: 16,
-          }}>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 22, color: 'var(--lime)', fontWeight: 600 }}>FT</span>
-          </div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--ink)' }}>
-            FitTrack
-          </h1>
-          <p className="mono-tag" style={{ marginTop: 6 }}>Training planner</p>
-        </div>
-
-        {/* Toggle */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          background: 'var(--paper-2)', border: '1px solid var(--hair)',
-          borderRadius: 'var(--r-2)', padding: 3, marginBottom: 24, gap: 3,
-        }}>
-          {(['login', 'register'] as const).map((m) => (
-            <button key={m} onClick={() => { setMode(m); setError(''); setInfo(''); }} style={{
-              padding: '9px 0',
-              background: mode === m ? 'var(--ink)' : 'transparent',
-              color: mode === m ? 'var(--paper)' : 'var(--ink-3)',
-              border: 'none', borderRadius: 5,
-              fontFamily: 'var(--mono)', fontSize: 11, fontWeight: 500,
-              letterSpacing: '0.04em', textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}>
-              {m === 'login' ? 'Sign In' : 'Register'}
-            </button>
-          ))}
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {mode === 'register' && (
-            <div>
-              <label className="ft-label">Full Name</label>
-              <input className="ft-input" type="text" value={form.name} onChange={field('name')}
-                placeholder="Alex Johnson" required autoComplete="name" />
-            </div>
-          )}
-          <div>
-            <label className="ft-label">Email</label>
-            <input className="ft-input" type="email" value={form.email} onChange={field('email')}
-              placeholder="you@example.com" required autoComplete="email" />
-          </div>
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <label className="ft-label">Password</label>
-              {mode === 'login' && (
-                <button type="button" onClick={handleForgotPassword} disabled={resetSending} style={{
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em',
-                  textTransform: 'uppercase', color: 'var(--ink-3)',
-                  textDecoration: 'underline', textUnderlineOffset: 2,
-                  opacity: resetSending ? 0.5 : 1,
-                }}>
-                  {resetSending ? 'Sending…' : 'Forgot password?'}
-                </button>
-              )}
-            </div>
-            <input className="ft-input" type="password" value={form.password} onChange={field('password')}
-              placeholder={mode === 'register' ? 'At least 6 characters' : '••••••••'}
-              required minLength={6}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-          </div>
-
-          {error && (
-            <div style={{
-              background: 'oklch(0.93 0.05 30)', border: '1px solid oklch(0.80 0.08 30)',
-              color: 'oklch(0.35 0.10 30)', borderRadius: 'var(--r-2)', padding: '10px 14px',
-              fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.02em',
-            }}>{error}</div>
-          )}
-          {info && (
-            <div style={{
-              background: 'oklch(0.93 0.12 145)', border: '1px solid oklch(0.80 0.12 145)',
-              color: 'oklch(0.30 0.10 145)', borderRadius: 'var(--r-2)', padding: '10px 14px',
-              fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.02em',
-            }}>{info}</div>
-          )}
-
-          <button type="submit" disabled={loading} className="block-btn" style={{ marginTop: 4 }}>
-            <span>{loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}</span>
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6"/>
+    <div className="ft-screen flex flex-col items-center justify-center p-6 bg-[var(--paper-2)]">
+      <div className="w-full max-w-[360px] animate-slide-up">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-[var(--ink)] text-[var(--paper)] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+              <path d="M12 8v8M8 12h8"/>
             </svg>
-          </button>
-        </form>
+          </div>
+          <Typography variant="h1" className="text-3xl mb-1 block">FitTrack</Typography>
+          <Typography variant="mono" className="text-[var(--ink-3)]">The iron never lies</Typography>
+        </div>
 
-        <p style={{ textAlign: 'center', marginTop: 24 }} className="mono-tag">
-          {mode === 'login' ? 'No account? ' : 'Have an account? '}
-          <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setInfo(''); }} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em',
-            textTransform: 'uppercase', color: 'var(--ink)', fontWeight: 600,
-            textDecoration: 'underline', textUnderlineOffset: 3, padding: 0,
-          }}>
-            {mode === 'login' ? 'Register' : 'Sign in'}
+        <Card className="p-6 shadow-md border-none">
+          <div className="flex bg-[var(--paper-2)] p-1 rounded-[var(--r-1)] mb-6">
+            <button
+              onClick={() => { setMode('login'); setError(''); setMessage(''); }}
+              className={`flex-1 h-9 rounded-[7px] text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
+                mode === 'login' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-sm' : 'bg-transparent text-[var(--ink-4)]'
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => { setMode('signup'); setError(''); setMessage(''); }}
+              className={`flex-1 h-9 rounded-[7px] text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
+                mode === 'signup' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-sm' : 'bg-transparent text-[var(--ink-4)]'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={handleAuth} className="flex flex-col gap-5">
+            {mode === 'signup' && (
+              <Input
+                label="Full Name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                required
+              />
+            )}
+            <Input
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              autoFocus
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              minLength={6}
+            />
+
+            {error && <Badge variant="danger" className="py-2.5 px-4 text-[11px] leading-relaxed">{error}</Badge>}
+            {message && <Badge variant="success" className="py-2.5 px-4 text-[11px] leading-relaxed">{message}</Badge>}
+
+            <Button
+              type="submit"
+              isLoading={loading}
+              className="mt-2 h-12"
+              rightIcon={!loading && (
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+              )}
+            >
+              {mode === 'login' ? 'Continue' : 'Create Account'}
+            </Button>
+          </form>
+        </Card>
+
+        {mode === 'login' && (
+          <button
+            onClick={async () => {
+              if (!email) { setError('Enter your email first'); return; }
+              setLoading(true); setError('');
+              const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/update-password',
+              });
+              setLoading(false);
+              if (error) setError(error.message);
+              else setMessage('Reset link sent to your email.');
+            }}
+            className="w-full mt-6 bg-transparent border-none cursor-pointer font-mono text-[9px] font-bold tracking-widest uppercase text-[var(--ink-4)] hover:text-[var(--ink-2)] transition-colors"
+          >
+            Forgot password?
           </button>
-        </p>
+        )}
       </div>
     </div>
   );

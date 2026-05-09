@@ -18,25 +18,22 @@ export const WorkoutProgress: React.FC<WorkoutProgressProps> = ({
   isAllDone,
 }) => {
   return (
-    <div className="px-5 pb-4">
-      <div className="flex items-baseline justify-between">
-        <div>
-          <Typography variant="mono" className="block text-[10px]">Elapsed</Typography>
-          <Typography variant="bignum" className="text-[50px] leading-[1.05] mt-0.5 block">
+    <div className="px-5 pb-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-[var(--ink-3)]" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <Typography variant="mono" className="text-[13px] tabular-nums text-[var(--ink-2)]">
             {elapsedClock}
           </Typography>
         </div>
-        <div className="text-right">
-          <Typography variant="mono" className="block text-[10px]">Sets</Typography>
-          <div className="mt-0.5">
-            <Typography variant="bignum" className="text-[50px] leading-[1.05]">{doneCount}</Typography>
-            <Typography variant="bignum" className="text-[22px] text-[var(--ink-3)]">/{totalSets}</Typography>
-          </div>
-        </div>
+        <Typography variant="mono" className="text-[13px]">
+          <span className="text-[var(--ink-2)] font-semibold">{doneCount}</span>
+          <span className="text-[var(--ink-4)]"> / {totalSets} sets</span>
+        </Typography>
       </div>
-
-      {/* Progress bar */}
-      <div className="h-1 bg-[var(--paper-3)] mt-3 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-[var(--paper-3)] rounded-full overflow-hidden">
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500 ease-out',

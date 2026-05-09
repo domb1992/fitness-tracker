@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { plansApi, sessionsApi } from '../api/client';
 import { useWorkoutStore } from '../store/store';
@@ -35,6 +35,7 @@ export default function WorkoutPage() {
   const [showConfirm,  setShowConfirm]  = useState(false);
   const [showAbandon,  setShowAbandon]  = useState(false);
   const [lastSet,      setLastSet]      = useState<string>('');
+  const [focusedIdx,   setFocusedIdx]   = useState(0);
 
   useEffect(() => {
     if (syncPending) { navigate('/dashboard', { replace: true }); }
@@ -122,6 +123,27 @@ export default function WorkoutPage() {
   const progress  = totalSets > 0 ? doneCount / totalSets : 0;
   const allDone   = doneCount === totalSets && totalSets > 0;
 
+  const exercisesWithMeta = useMemo(() =>
+    exercises.map((ex, i) => ({
+      ex,
+      i,
+      strengthNumber: exercises.slice(0, i).filter((e) => e.exercise.exercise_type !== 'warmup').length + 1,
+    })),
+    [exercises]
+  );
+
+  // Auto-advance to the next uncompleted exercise when the focused one finishes
+  useEffect(() => {
+    if (exercisesWithMeta.length === 0) return;
+    const focused = exercisesWithMeta[focusedIdx];
+    if (!focused) return;
+    if (focused.ex.sets.every((s) => s.done)) {
+      const next = exercisesWithMeta.findIndex((m, idx) => idx > focusedIdx && m.ex.sets.some((s) => !s.done));
+      if (next !== -1) setFocusedIdx(next);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exercises]);
+
   if (loading) {
     return (
       <div className="ft-loader">
@@ -131,14 +153,8 @@ export default function WorkoutPage() {
     );
   }
 
-  // Pre-compute per-exercise strength number once so we don't duplicate the slice+filter in each render branch
-  const exercisesWithMeta = exercises.map((ex, i) => ({
-    ex,
-    i,
-    strengthNumber: exercises.slice(0, i).filter((e) => e.exercise.exercise_type !== 'warmup').length + 1,
-  }));
-  const activeGroup    = exercisesWithMeta.filter(({ ex }) => ex.sets.some((s) => !s.done));
-  const completedGroup = exercisesWithMeta.filter(({ ex }) => ex.sets.every((s) => s.done));
+  const focused = exercisesWithMeta[focusedIdx];
+  const total   = exercisesWithMeta.length;
 
   return (
     <div className="ft-screen" style={{ paddingBottom: 'calc(240px + env(safe-area-inset-bottom, 0px))' }}>
@@ -169,87 +185,88 @@ export default function WorkoutPage() {
       />
 
       {error && (
-        <div className="mx-5 mb-4 font-mono text-xs text-[var(--danger)]">
+        <div className="mx-5 mb-3 font-mono text-xs text-[var(--danger)]">
           {error}
         </div>
       )}
 
       <div className="px-5 flex flex-col gap-3">
-        {activeGroup.map(({ ex, i, strengthNumber }) => {
-          if (ex.exercise.exercise_type === 'warmup') {
-            return (
-              <WarmupExerciseCard
-                key={ex.exercise.id}
-                exIdx={i}
-                activeEx={ex}
-                onUpdateSet={updateSet}
-                onSetDone={handleSetDone}
-              />
-            );
-          }
-          return (
+
+        {/* Exercise navigator */}
+        {focused && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFocusedIdx((p) => Math.max(0, p - 1))}
+              disabled={focusedIdx === 0}
+              aria-label="Previous exercise"
+              className="flex items-center justify-center w-9 h-9 rounded-[var(--r-1)] border border-[var(--border)] bg-transparent text-[var(--ink-3)] disabled:opacity-25 transition-opacity active:scale-95"
+            >
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div className="flex-1 min-w-0 text-center">
+              <Typography variant="mono" className="text-[10px] text-[var(--ink-4)] block">
+                {focusedIdx + 1} / {total}
+              </Typography>
+              <p className="text-[13px] font-semibold truncate leading-tight mt-0.5 text-[var(--ink-2)]">
+                {focused.ex.exercise.name}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setFocusedIdx((p) => Math.min(total - 1, p + 1))}
+              disabled={focusedIdx === total - 1}
+              aria-label="Next exercise"
+              className="flex items-center justify-center w-9 h-9 rounded-[var(--r-1)] border border-[var(--border)] bg-transparent text-[var(--ink-3)] disabled:opacity-25 transition-opacity active:scale-95"
+            >
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* Single focused exercise card */}
+        {focused && (
+          focused.ex.exercise.exercise_type === 'warmup' ? (
+            <WarmupExerciseCard
+              key={focused.ex.exercise.id}
+              exIdx={focused.i}
+              activeEx={focused.ex}
+              onUpdateSet={updateSet}
+              onSetDone={handleSetDone}
+            />
+          ) : (
             <StrengthExerciseCard
-              key={ex.exercise.id}
-              exIdx={i}
-              activeEx={ex}
-              strengthNumber={strengthNumber}
+              key={focused.ex.exercise.id}
+              exIdx={focused.i}
+              activeEx={focused.ex}
+              strengthNumber={focused.strengthNumber}
               onUpdateSet={updateSet}
               onSetDone={handleSetDone}
               onAddSet={addSet}
               onRemoveSet={removeSet}
             />
-          );
-        })}
+          )
+        )}
 
-        <Button
-          variant={allDone ? 'lime' : 'primary'}
-          className="mt-1 h-14"
-          onClick={() => setShowConfirm(true)}
-          disabled={completing}
-          rightIcon={(
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12l5 5L20 6"/>
-            </svg>
-          )}
-        >
-          {completing ? 'Saving…' : allDone ? 'Save & Finish 🎉' : 'Finish Workout'}
-        </Button>
-
-        {completedGroup.length > 0 && (
-          <>
-            <div className="flex items-center gap-2.5 my-0.5">
-              <div className="flex-1 h-px bg-[var(--hair)]" />
-              <Typography variant="mono" className="text-[9px] text-[var(--ink-4)]">
-                DONE ({completedGroup.length})
-              </Typography>
-              <div className="flex-1 h-px bg-[var(--hair)]" />
-            </div>
-            {completedGroup.map(({ ex, i, strengthNumber }) => {
-              if (ex.exercise.exercise_type === 'warmup') {
-                return (
-                  <WarmupExerciseCard
-                    key={ex.exercise.id}
-                    exIdx={i}
-                    activeEx={ex}
-                    onUpdateSet={updateSet}
-                    onSetDone={handleSetDone}
-                  />
-                );
-              }
-              return (
-                <StrengthExerciseCard
-                  key={ex.exercise.id}
-                  exIdx={i}
-                  activeEx={ex}
-                  strengthNumber={strengthNumber}
-                  onUpdateSet={updateSet}
-                  onSetDone={handleSetDone}
-                  onAddSet={addSet}
-                  onRemoveSet={removeSet}
-                />
-              );
-            })}
-          </>
+        {/* Finish CTA — only appears when all exercises are done */}
+        {allDone && (
+          <Button
+            variant="lime"
+            className="mt-1 h-14"
+            onClick={() => setShowConfirm(true)}
+            disabled={completing}
+            rightIcon={(
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12l5 5L20 6"/>
+              </svg>
+            )}
+          >
+            {completing ? 'Saving…' : 'Save & Finish 🎉'}
+          </Button>
         )}
 
         <button

@@ -62,8 +62,8 @@
   --r-full: 999px;
 
   /* ── Typography ──────────────────────────────────────────────────────────── */
-  --sans: "Geist", "Inter", -apple-system, system-ui, sans-serif;
-  --mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Space Grotesk", "Inter", -apple-system, system-ui, sans-serif;
+  --mono: "Space Mono", "JetBrains Mono", ui-monospace, monospace;
 
   /* ── Motion ──────────────────────────────────────────────────────────────── */
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);
@@ -146,7 +146,7 @@ body {
   font-family: var(--sans);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: "ss01", "cv01", "tnum";
+  font-feature-settings: "tnum", "ss01";
   letter-spacing: -0.01em;
   -webkit-tap-highlight-color: transparent;
   transition:

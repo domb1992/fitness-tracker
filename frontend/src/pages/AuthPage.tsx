@@ -55,9 +55,16 @@ export default function AuthPage() {
       <div className="w-full max-w-[360px] animate-slide-up">
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-[var(--ink)] text-[var(--paper)] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
-              <path d="M12 8v8M8 12h8"/>
+            {/* Dumbbell — immediately communicates the fitness tracking purpose */}
+            <svg width={30} height={30} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6.5 6.5h11"/>
+              <path d="M6.5 17.5h11"/>
+              <path d="M4 8.5v7"/>
+              <path d="M20 8.5v7"/>
+              <rect x="2" y="8" width="3" height="8" rx="1"/>
+              <rect x="19" y="8" width="3" height="8" rx="1"/>
+              <rect x="5" y="6" width="2" height="12" rx="1"/>
+              <rect x="17" y="6" width="2" height="12" rx="1"/>
             </svg>
           </div>
           <Typography variant="h1" className="text-3xl mb-1 block">FitTrack</Typography>

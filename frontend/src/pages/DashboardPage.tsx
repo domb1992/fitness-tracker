@@ -44,8 +44,9 @@ export default function DashboardPage() {
       setPlans(planList);
       setSessions(sessionList);
       setStats(statsData);
-    } catch { /* auth error handled by RequireAuth */ }
-    finally { setLoading(false); }
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('[Dashboard] load error:', err);
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -133,7 +134,12 @@ export default function DashboardPage() {
       {/* Empty state for sessions */}
       {sessions.length === 0 && plans.length > 0 && (
         <div className="px-5 pb-6">
-          <div className="border border-dashed border-[var(--border)] rounded-[var(--r-2)] p-[28px_20px] text-center">
+          <div className="empty-state border border-dashed border-[var(--border)] rounded-[var(--r-2)]">
+            <div className="empty-state-icon">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 4.5v15l13-7.5z"/>
+              </svg>
+            </div>
             <p className="mono-tag text-[var(--ink-4)] m-0">
               No workouts yet — start your first session above
             </p>

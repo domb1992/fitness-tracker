@@ -1,28 +1,12 @@
-import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkoutStore } from '../store/store';
-
-function useClock(startedAt: string | null) {
-  const [elapsed, setElapsed] = useState(() =>
-    startedAt ? Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000) : 0
-  );
-  useEffect(() => {
-    if (!startedAt) return;
-    const iv = setInterval(() =>
-      setElapsed(Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000)), 1000
-    );
-    return () => clearInterval(iv);
-  }, [startedAt]);
-  const m = Math.floor(elapsed / 60);
-  const s = elapsed % 60;
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
+import { useWorkoutClock } from '../hooks/useWorkoutClock';
 
 export default function ActiveWorkoutBar() {
   const { sessionId, planId, planName, startedAt, exercises, syncPending } = useWorkoutStore();
   const navigate = useNavigate();
   const location = useLocation();
-  const clock    = useClock(startedAt);
+  const clock    = useWorkoutClock(startedAt);
 
   const doneCount = exercises.reduce((a, ex) => a + (ex.sets?.filter((s) => s.done).length ?? 0), 0);
   const totalSets = exercises.reduce((a, ex) => a + (ex.sets?.length ?? 0), 0);

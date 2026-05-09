@@ -32,11 +32,12 @@ export default function PlanDetailPage() {
       })
       .catch(() => navigate('/dashboard', { replace: true }))
       .finally(() => setLoading(false));
-  }, [planId]);
+  }, [planId, navigate]);
 
   if (loading || !plan) {
     return (
-      <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="ft-loader">
+        <div className="ft-loader-dot" />
         <span className="mono-tag">Loading…</span>
       </div>
     );
@@ -47,7 +48,7 @@ export default function PlanDetailPage() {
     : null;
 
   return (
-    <div className="ft-screen" style={{ paddingBottom: 100 }}>
+    <div className="ft-screen" style={{ paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Header */}
       <div style={{ padding: '8px 20px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button className="icon-btn" onClick={() => navigate('/dashboard')}>

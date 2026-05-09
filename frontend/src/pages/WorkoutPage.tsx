@@ -4,6 +4,7 @@ import { plansApi, sessionsApi } from '../api/client';
 import { useWorkoutStore } from '../store/store';
 import { useRestTimer } from '../hooks/useRestTimer';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { useWorkoutClock } from '../hooks/useWorkoutClock';
 import { TrainingPlan } from '../types';
 import { Badge, Button, Typography } from '../components/ui';
 
@@ -14,19 +15,6 @@ import { WarmupExerciseCard } from './workout/components/WarmupExerciseCard';
 import { StrengthExerciseCard } from './workout/components/StrengthExerciseCard';
 import { RestTimerPanel } from './workout/components/RestTimerPanel';
 import { WorkoutDialogs } from './workout/components/WorkoutDialogs';
-
-function useWorkoutClock(startedAt: string | null) {
-  const [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    if (!startedAt) return;
-    const iv = setInterval(() =>
-      setElapsed(Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000)), 1000);
-    return () => clearInterval(iv);
-  }, [startedAt]);
-  const m = Math.floor(elapsed / 60);
-  const s = elapsed % 60;
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
 
 export default function WorkoutPage() {
   const { planId } = useParams<{ planId: string }>();
@@ -39,7 +27,7 @@ export default function WorkoutPage() {
 
   const timer        = useRestTimer();
   const isOnline     = useOnlineStatus();
-  const elapsedClock = useWorkoutClock(startedAt);
+  const elapsedClock = useWorkoutClock(startedAt);  // shared hook
 
   const [loading,      setLoading]      = useState(false);
   const [completing,   setCompleting]   = useState(false);
@@ -143,11 +131,17 @@ export default function WorkoutPage() {
     );
   }
 
-  const activeGroup    = exercises.map((ex, i) => ({ ex, i })).filter(({ ex }) => ex.sets.some((s) => !s.done));
-  const completedGroup = exercises.map((ex, i) => ({ ex, i })).filter(({ ex }) => ex.sets.every((s) => s.done));
+  // Pre-compute per-exercise strength number once so we don't duplicate the slice+filter in each render branch
+  const exercisesWithMeta = exercises.map((ex, i) => ({
+    ex,
+    i,
+    strengthNumber: exercises.slice(0, i).filter((e) => e.exercise.exercise_type !== 'warmup').length + 1,
+  }));
+  const activeGroup    = exercisesWithMeta.filter(({ ex }) => ex.sets.some((s) => !s.done));
+  const completedGroup = exercisesWithMeta.filter(({ ex }) => ex.sets.every((s) => s.done));
 
   return (
-    <div className="ft-screen" style={{ paddingBottom: 240 }}>
+    <div className="ft-screen" style={{ paddingBottom: 'calc(240px + env(safe-area-inset-bottom, 0px))' }}>
 
       {!isOnline && (
         <Badge variant="warning" className="rounded-none border-0 px-5 py-2 block">
@@ -181,7 +175,7 @@ export default function WorkoutPage() {
       )}
 
       <div className="px-5 flex flex-col gap-3">
-        {activeGroup.map(({ ex, i }) => {
+        {activeGroup.map(({ ex, i, strengthNumber }) => {
           if (ex.exercise.exercise_type === 'warmup') {
             return (
               <WarmupExerciseCard
@@ -193,7 +187,6 @@ export default function WorkoutPage() {
               />
             );
           }
-          const strengthNumber = exercises.slice(0, i).filter((e) => e.exercise.exercise_type !== 'warmup').length + 1;
           return (
             <StrengthExerciseCard
               key={ex.exercise.id}
@@ -231,7 +224,7 @@ export default function WorkoutPage() {
               </Typography>
               <div className="flex-1 h-px bg-[var(--hair)]" />
             </div>
-            {completedGroup.map(({ ex, i }) => {
+            {completedGroup.map(({ ex, i, strengthNumber }) => {
               if (ex.exercise.exercise_type === 'warmup') {
                 return (
                   <WarmupExerciseCard
@@ -243,7 +236,6 @@ export default function WorkoutPage() {
                   />
                 );
               }
-              const strengthNumber = exercises.slice(0, i).filter((e) => e.exercise.exercise_type !== 'warmup').length + 1;
               return (
                 <StrengthExerciseCard
                   key={ex.exercise.id}

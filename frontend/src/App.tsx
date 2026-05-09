@@ -1,21 +1,23 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, useThemeStore } from './store/store';
 import { supabase } from './lib/supabase';
-import AuthPage            from './pages/AuthPage';
-import SetupPage           from './pages/SetupPage';
-import DashboardPage       from './pages/DashboardPage';
-import PlanDetailPage      from './pages/PlanDetailPage';
-import EditPlanPage        from './pages/EditPlanPage';
-import WorkoutPage         from './pages/WorkoutPage';
-import ProgressPage        from './pages/ProgressPage';
-import SettingsPage        from './pages/SettingsPage';
-import SessionPage         from './pages/SessionPage';
-import UpdatePasswordPage  from './pages/UpdatePasswordPage';
-import ExerciseDetailPage  from './pages/ExerciseDetailPage';
-import ActiveWorkoutBar    from './components/ActiveWorkoutBar';
-import BottomNav           from './components/BottomNav';
-import ErrorBoundary       from './components/ErrorBoundary';
+import ActiveWorkoutBar from './components/ActiveWorkoutBar';
+import BottomNav        from './components/BottomNav';
+import ErrorBoundary    from './components/ErrorBoundary';
+
+// Route-based code splitting — each page loads only when first visited
+const AuthPage           = lazy(() => import('./pages/AuthPage'));
+const SetupPage          = lazy(() => import('./pages/SetupPage'));
+const DashboardPage      = lazy(() => import('./pages/DashboardPage'));
+const PlanDetailPage     = lazy(() => import('./pages/PlanDetailPage'));
+const EditPlanPage       = lazy(() => import('./pages/EditPlanPage'));
+const WorkoutPage        = lazy(() => import('./pages/WorkoutPage'));
+const ProgressPage       = lazy(() => import('./pages/ProgressPage'));
+const SettingsPage       = lazy(() => import('./pages/SettingsPage'));
+const SessionPage        = lazy(() => import('./pages/SessionPage'));
+const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
+const ExerciseDetailPage = lazy(() => import('./pages/ExerciseDetailPage'));
 
 function AuthEventHandler() {
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ export default function App() {
   const init       = useAuthStore((s) => s.init);
   const applyTheme = useThemeStore((s) => s.applyTheme);
 
-  useEffect(() => { init(); }, [init]);
+  useEffect(() => init(), [init]);  // init() returns the unsubscribe cleanup fn
   useEffect(() => {
     applyTheme();
     // Re-apply when system preference changes
@@ -63,6 +65,7 @@ export default function App() {
     <ErrorBoundary>
     <div className="ft-app">
       <BrowserRouter>
+        <Suspense fallback={<div className="ft-loader"><div className="ft-loader-dot" /></div>}>
         <Routes>
           <Route path="/auth"            element={<AuthPage />} />
           <Route path="/"                element={<Navigate to="/dashboard" replace />} />
@@ -78,6 +81,7 @@ export default function App() {
           <Route path="/update-password"       element={<UpdatePasswordPage />} />
           <Route path="*"                element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        </Suspense>
         <ActiveWorkoutBar />
         <BottomNav />
         <AuthEventHandler />

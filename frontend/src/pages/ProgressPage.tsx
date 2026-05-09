@@ -220,8 +220,7 @@ export default function ProgressPage() {
         }
       })
       .catch((err) => {
-        // RPC not deployed yet — surface the error in console and fall back
-        console.warn('[FitTrack] get_lift_progression RPC unavailable:', err?.message ?? err);
+        if (import.meta.env.DEV) console.warn('[FitTrack] get_lift_progression RPC unavailable:', err?.message ?? err);
         if (!cancelled) setLiftRpcReady(false);
         // bestWeights loads separately via stats; set lifts to [] so fallback renders
         setLifts([]);
@@ -263,7 +262,8 @@ export default function ProgressPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="ft-loader">
+        <div className="ft-loader-dot" />
         <span className="mono-tag">Loading…</span>
       </div>
     );
@@ -339,8 +339,8 @@ export default function ProgressPage() {
 
       {/* Header */}
       <div style={{ padding: '14px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Progress</div>
-        <button onClick={handleShare} className="icon-btn" style={{ color: copied ? 'oklch(0.5 0.18 145)' : undefined }}>
+        <span className="mono-tag">Progress</span>
+        <button onClick={handleShare} aria-label={copied ? 'Copied' : 'Share progress'} className="icon-btn" style={{ color: copied ? 'oklch(0.5 0.18 145)' : undefined }}>
           {copied ? (
             <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em' }}>COPIED</span>
           ) : (
@@ -376,12 +376,12 @@ export default function ProgressPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <span className="mono-tag">{isCurrent ? 'This Month' : 'Month'}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <button aria-label="Previous month" onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
+              <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <span className="mono-tag" style={{ minWidth: 110, textAlign: 'center' }}>{monthName}</span>
-            <button onClick={() => setMonthOffset((o) => Math.min(0, o + 1))} disabled={isCurrent} style={{ background: 'none', border: 'none', cursor: isCurrent ? 'default' : 'pointer', color: isCurrent ? 'var(--paper-3)' : 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            <button aria-label="Next month" onClick={() => setMonthOffset((o) => Math.min(0, o + 1))} disabled={isCurrent} style={{ background: 'none', border: 'none', cursor: isCurrent ? 'default' : 'pointer', color: isCurrent ? 'var(--paper-3)' : 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
+              <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           </div>
         </div>
@@ -407,7 +407,7 @@ export default function ProgressPage() {
                 }}>
                 {c.day !== null && (
                   <span style={{
-                    fontFamily: 'var(--mono)', fontSize: 9,
+                    fontFamily: 'var(--mono)', fontSize: 11,
                     color: c.on ? 'var(--paper)' : c.future ? 'var(--paper-3)' : 'var(--ink-3)',
                     fontWeight: c.today ? 700 : 400,
                   }}>{c.day}</span>
@@ -434,7 +434,7 @@ export default function ProgressPage() {
       {/* ── Volume by Muscle Group ───────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Volume by Muscle</h3>
+          <h3 className="section-title">Volume by Muscle</h3>
           <span className="mono-tag">{monthName.split(' ')[0]}</span>
         </div>
         <div className="surface" style={{ padding: '16px 14px' }}>
@@ -468,7 +468,7 @@ export default function ProgressPage() {
       {/* ── Lift Progression ─────────────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Lift Progression</h3>
+          <h3 className="section-title">Lift Progression</h3>
           <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
             {liftLoading
               ? '…'
@@ -477,19 +477,6 @@ export default function ProgressPage() {
                 : `${fallbackLifts.length} lifts`}
           </span>
         </div>
-
-        {/* Migration notice — shown when new RPC isn't deployed yet */}
-        {!liftRpcReady && !liftLoading && (
-          <div style={{
-            marginBottom: 10, padding: '10px 14px',
-            background: 'oklch(0.97 0.04 60)', border: '1px solid oklch(0.88 0.1 60)',
-            borderRadius: 'var(--r-2)',
-          }}>
-            <p style={{ margin: 0, fontFamily: 'var(--mono)', fontSize: 10, color: 'oklch(0.45 0.12 60)', letterSpacing: '0.03em' }}>
-              Run <strong>add_analytics_rpcs.sql</strong> in Supabase to enable sparklines &amp; full history. Showing basic data for now.
-            </p>
-          </div>
-        )}
 
         {liftLoading ? (
           <div className="surface" style={{ padding: '24px 14px', textAlign: 'center' }}>
@@ -521,8 +508,8 @@ export default function ProgressPage() {
 
                 return (
                   <button key={e.exercise_id} onClick={() => navigate(`/exercise/${e.exercise_id}`)}
-                    className="card"
-                    style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', gap: 10, padding: '12px 14px', background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left', boxSizing: 'border-box' }}
+                    className="card card-interactive"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer', width: '100%', textAlign: 'left', boxSizing: 'border-box' }}
                   >
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

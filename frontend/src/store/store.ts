@@ -52,7 +52,7 @@ export const useThemeStore = create<ThemeState>()(
 interface AuthState {
   user:        User | null;
   initialized: boolean;
-  init:        () => void;
+  init:        () => () => void;   // returns unsubscribe for useEffect cleanup
   signOut:     () => Promise<void>;
   updateName:  (name: string) => Promise<void>;
 }
@@ -73,9 +73,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     supabase.auth.getSession().then(({ data: { session } }) => {
       set({ user: session?.user ? mapUser(session.user) : null, initialized: true });
     });
-    supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       set({ user: session?.user ? mapUser(session.user) : null, initialized: true });
     });
+    return () => subscription.unsubscribe();
   },
 
   signOut: async () => {

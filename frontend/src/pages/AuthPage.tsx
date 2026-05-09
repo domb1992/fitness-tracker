@@ -51,47 +51,51 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="ft-screen flex flex-col items-center justify-center p-6 bg-[var(--paper-2)]">
-      <div className="w-full max-w-[360px] animate-slide-up">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-[var(--ink)] text-[var(--paper)] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+    <div className="ft-screen flex flex-col items-center justify-center p-8 bg-[var(--paper-2)] relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[40%] bg-[var(--lime)]/5 blur-[120px] rounded-full" />
+      <div className="absolute -bottom-[10%] -right-[10%] w-[60%] h-[40%] bg-[var(--ink)]/5 blur-[120px] rounded-full" />
+
+      <div className="w-full max-w-[380px] animate-slide-up z-10">
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 bg-[var(--ink)] text-[var(--paper)] rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-2xl rotate-[5deg]">
+            <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
               <path d="M12 8v8M8 12h8"/>
             </svg>
           </div>
-          <Typography variant="h1" className="text-3xl mb-1 block">FitTrack</Typography>
-          <Typography variant="mono" className="text-[var(--ink-3)]">The iron never lies</Typography>
+          <Typography variant="h1" className="text-4xl mb-2 block font-black">FitTrack</Typography>
+          <Typography variant="mono" className="text-[var(--ink-4)] font-bold tracking-widest text-[11px]">THE IRON NEVER LIES</Typography>
         </div>
 
-        <Card className="p-6 shadow-md border-none">
-          <div className="flex bg-[var(--paper-2)] p-1 rounded-[var(--r-1)] mb-6">
+        <Card className="p-8 shadow-2xl border-none rounded-[var(--r-3)] bg-[var(--paper)]">
+          <div className="flex bg-[var(--paper-2)] p-1.5 rounded-2xl mb-8">
             <button
               onClick={() => { setMode('login'); setError(''); setMessage(''); }}
-              className={`flex-1 h-9 rounded-[7px] text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
-                mode === 'login' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-sm' : 'bg-transparent text-[var(--ink-4)]'
+              className={`flex-1 h-11 rounded-xl text-[11px] font-mono font-black uppercase tracking-[0.1em] transition-all ${
+                mode === 'login' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-md' : 'bg-transparent text-[var(--ink-4)]'
               }`}
             >
               Log In
             </button>
             <button
               onClick={() => { setMode('signup'); setError(''); setMessage(''); }}
-              className={`flex-1 h-9 rounded-[7px] text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${
-                mode === 'signup' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-sm' : 'bg-transparent text-[var(--ink-4)]'
+              className={`flex-1 h-11 rounded-xl text-[11px] font-mono font-black uppercase tracking-[0.1em] transition-all ${
+                mode === 'signup' ? 'bg-[var(--paper)] text-[var(--ink)] shadow-md' : 'bg-transparent text-[var(--ink-4)]'
               }`}
             >
               Sign Up
             </button>
           </div>
 
-          <form onSubmit={handleAuth} className="flex flex-col gap-5">
+          <form onSubmit={handleAuth} className="flex flex-col gap-6">
             {mode === 'signup' && (
               <Input
                 label="Full Name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder="John Doe"
                 required
               />
             )}
@@ -102,7 +106,6 @@ export default function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              autoFocus
             />
             <Input
               label="Password"
@@ -114,20 +117,20 @@ export default function AuthPage() {
               minLength={6}
             />
 
-            {error && <Badge variant="danger" className="py-2.5 px-4 text-[11px] leading-relaxed">{error}</Badge>}
-            {message && <Badge variant="success" className="py-2.5 px-4 text-[11px] leading-relaxed">{message}</Badge>}
+            {error && <Badge variant="danger" className="py-3 px-5 text-[11px] leading-relaxed rounded-xl">{error}</Badge>}
+            {message && <Badge variant="success" className="py-3 px-5 text-[11px] leading-relaxed rounded-xl">{message}</Badge>}
 
             <Button
               type="submit"
               isLoading={loading}
-              className="mt-2 h-12"
+              className="mt-2 h-14 rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02]"
               rightIcon={!loading && (
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6"/>
                 </svg>
               )}
             >
-              {mode === 'login' ? 'Continue' : 'Create Account'}
+              {mode === 'login' ? 'Continue' : 'Join Now'}
             </Button>
           </form>
         </Card>
@@ -144,7 +147,7 @@ export default function AuthPage() {
               if (error) setError(error.message);
               else setMessage('Reset link sent to your email.');
             }}
-            className="w-full mt-6 bg-transparent border-none cursor-pointer font-mono text-[9px] font-bold tracking-widest uppercase text-[var(--ink-4)] hover:text-[var(--ink-2)] transition-colors"
+            className="w-full mt-10 bg-transparent border-none cursor-pointer font-mono text-[10px] font-black tracking-widest uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-all"
           >
             Forgot password?
           </button>

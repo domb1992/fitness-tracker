@@ -18,28 +18,28 @@ export const WorkoutProgress: React.FC<WorkoutProgressProps> = ({
   isAllDone,
 }) => {
   return (
-    <div className="px-5 pb-4">
-      <div className="flex items-baseline justify-between">
+    <div className="px-6 py-8">
+      <div className="flex items-end justify-between mb-6">
         <div>
-          <Typography variant="mono" className="block text-[10px]">Elapsed</Typography>
-          <Typography variant="bignum" className="text-[50px] leading-[1.05] mt-0.5 block">
+          <Typography variant="mono" className="block text-[10px] opacity-40 font-bold tracking-widest mb-1 uppercase">Elapsed Time</Typography>
+          <Typography variant="bignum" className="text-[54px] leading-none block font-medium tracking-tight text-[var(--ink)]">
             {elapsedClock}
           </Typography>
         </div>
         <div className="text-right">
-          <Typography variant="mono" className="block text-[10px]">Sets</Typography>
-          <div className="mt-0.5">
-            <Typography variant="bignum" className="text-[50px] leading-[1.05]">{doneCount}</Typography>
-            <Typography variant="bignum" className="text-[22px] text-[var(--ink-3)]">/{totalSets}</Typography>
+          <Typography variant="mono" className="block text-[10px] opacity-40 font-bold tracking-widest mb-1 uppercase">Sets Completed</Typography>
+          <div className="flex items-baseline justify-end leading-none">
+            <Typography variant="bignum" className="text-[54px] font-medium text-[var(--ink)]">{doneCount}</Typography>
+            <Typography variant="bignum" className="text-[24px] text-[var(--ink-4)] ml-1">/ {totalSets}</Typography>
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-[var(--paper-3)] mt-3 rounded-full overflow-hidden">
+      <div className="relative h-2 bg-[var(--paper-2)] rounded-full overflow-hidden shadow-inner">
         <div
           className={cn(
-            'h-full rounded-full transition-all duration-500 ease-out',
+            'absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-[var(--ease-spring)] shadow-sm',
             isAllDone ? 'bg-[var(--lime)]' : 'bg-[var(--ink)]'
           )}
           style={{ width: `${progress * 100}%` }}

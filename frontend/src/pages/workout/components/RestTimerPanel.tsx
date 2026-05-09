@@ -42,10 +42,10 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
   const PRESETS = [60, 90, 120, 180];
 
   return (
-    <div className="ft-timer-panel fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40">
+    <div className="ft-timer-panel fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40 bg-[var(--surface-hi)] shadow-[0_-12px_40px_rgba(0,0,0,0.3)]">
       {/* Preset buttons row */}
-      <div className="flex items-center gap-1.5 mb-2.5">
-        <Typography variant="mono" className="text-[oklch(0.95_0.006_75_/_0.40)] mr-1 flex-shrink-0">REST</Typography>
+      <div className="flex items-center gap-1.5 mb-5 overflow-x-auto no-scrollbar pb-1">
+        <Typography variant="mono" className="text-white/30 mr-2 flex-shrink-0 text-[9px] font-bold">REST TIMER</Typography>
         {PRESETS.map((secs) => {
           const label = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
           const active = timer.initialSeconds === secs && timer.isRunning;
@@ -54,8 +54,8 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
               key={secs}
               onClick={() => { timer.startFrom(secs); setShowCustomTimer(false); }}
               className={cn(
-                'font-mono text-[10px] font-semibold h-[30px] px-2.5 rounded-[var(--r-1)] border-none cursor-pointer transition-all tracking-tight',
-                active ? 'bg-[var(--lime)] text-[var(--lime-ink)]' : 'bg-[oklch(0.95_0.006_75_/_0.10)] text-[oklch(0.95_0.006_75_/_0.60)]'
+                'font-mono text-[11px] font-bold h-[34px] px-3.5 rounded-xl border-none cursor-pointer transition-all tracking-tight flex-shrink-0',
+                active ? 'bg-[var(--lime)] text-[var(--lime-ink)] scale-105 shadow-lg' : 'bg-white/10 text-white/60 hover:bg-white/20'
               )}
             >
               {label}
@@ -65,34 +65,33 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
         <button
           onClick={() => setShowCustomTimer((v) => !v)}
           className={cn(
-            'font-mono text-[10px] font-bold h-[30px] px-2.5 rounded-[var(--r-1)] border-none cursor-pointer ml-auto tracking-widest',
-            showCustomTimer ? 'bg-[oklch(0.95_0.006_75_/_0.18)]' : 'bg-[oklch(0.95_0.006_75_/_0.10)]',
-            'text-[oklch(0.95_0.006_75_/_0.60)]'
+            'font-mono text-[11px] font-bold h-[34px] px-3.5 rounded-xl border-none cursor-pointer ml-auto tracking-widest flex-shrink-0 transition-all',
+            showCustomTimer ? 'bg-white/30 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'
           )}
         >
-          ···
+          •••
         </button>
       </div>
 
       {/* Custom timer picker */}
       {showCustomTimer && (
-        <Card variant="surface" className="flex items-center gap-2 mb-2.5 p-1 bg-[oklch(0.95_0.006_75_/_0.05)] border-none">
+        <Card className="flex items-center gap-3 mb-6 p-1.5 bg-white/5 border-white/10 rounded-[var(--r-2)]">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCustomSeconds((s: number) => Math.max(30, s - 30))}
-            className="w-9 h-9 border-none bg-[oklch(0.95_0.006_75_/_0.12)] text-white text-lg"
+            className="w-10 h-10 border-none bg-white/10 text-white text-xl rounded-xl hover:bg-white/20"
           >
             −
           </Button>
-          <Typography variant="bignum" className="flex-1 text-center text-2xl text-[var(--lime)]">
+          <Typography variant="bignum" className="flex-1 text-center text-3xl text-[var(--lime)] font-bold">
             {`${Math.floor(customSeconds / 60)}:${String(customSeconds % 60).padStart(2, '0')}`}
           </Typography>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCustomSeconds((s: number) => Math.min(600, s + 30))}
-            className="w-9 h-9 border-none bg-[oklch(0.95_0.006_75_/_0.12)] text-white text-lg"
+            className="w-10 h-10 border-none bg-white/10 text-white text-xl rounded-xl hover:bg-white/20"
           >
             +
           </Button>
@@ -100,7 +99,7 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
             variant="lime"
             size="sm"
             onClick={() => { timer.startFrom(customSeconds); setShowCustomTimer(false); }}
-            className="h-9 px-4 font-bold"
+            className="h-10 px-5 font-black uppercase text-[11px] tracking-widest"
           >
             Set
           </Button>
@@ -108,12 +107,12 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
       )}
 
       {/* Timer display + progress bar */}
-      <div className="flex items-center gap-4 mb-2.5">
-        <div className="min-w-[90px]">
+      <div className="flex items-center gap-6 mb-6">
+        <div className="min-w-[100px]">
           {timerJustDone ? (
             <Typography
               variant="bignum"
-              className="text-[50px] leading-none text-[var(--lime)] animate-[timer-done-pop_0.38s_var(--ease-spring)_both] whitespace-nowrap block"
+              className="text-[48px] leading-none text-[var(--lime)] animate-[timer-done-pop_0.4s_var(--ease-spring)_both] whitespace-nowrap block font-black"
             >
               Done!
             </Typography>
@@ -121,8 +120,8 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
             <Typography
               variant="bignum"
               className={cn(
-                'text-[56px] leading-none block transition-colors duration-300',
-                timer.isLow ? 'text-[oklch(0.75_0.18_30)]' : 'text-[var(--lime)]'
+                'text-[64px] leading-none block transition-colors duration-300 font-medium tracking-tighter',
+                timer.isLow ? 'text-[oklch(0.75_0.18_30)]' : 'text-white'
               )}
             >
               {timer.formatTime(timer.seconds)}
@@ -130,42 +129,48 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="h-1 bg-[oklch(0.95_0.006_75_/_0.12)] rounded-full">
+          <div className="h-2.5 bg-white/10 rounded-full relative overflow-hidden shadow-inner">
             <div
               className={cn(
-                'h-full bg-[var(--lime)] rounded-full transition-all',
+                'h-full bg-[var(--lime)] rounded-full transition-all shadow-[0_0_12px_oklch(var(--lime)_/_0.5)]',
                 timerJustDone ? 'duration-300 ease-[var(--ease-spring)]' : 'duration-1000 linear'
               )}
               style={{ width: timerJustDone ? '100%' : `${timer.progress * 100}%` }}
             />
           </div>
           {lastSet && (
-            <Typography variant="mono" className="text-[oklch(0.95_0.006_75_/_0.40)] mt-1.5 normal-case truncate block text-[9px]">
-              {lastSet}
-            </Typography>
+            <div className="flex items-center gap-2 mt-3 opacity-40 overflow-hidden">
+              <span className="w-1 h-1 rounded-full bg-white flex-shrink-0" />
+              <Typography variant="mono" className="text-white normal-case truncate block text-[10px] font-medium tracking-tight">
+                {lastSet}
+              </Typography>
+            </div>
           )}
         </div>
       </div>
 
       {/* Controls */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <Button
           onClick={timer.isRunning ? timer.pause : timer.start}
-          className="h-[42px] bg-[oklch(0.95_0.006_75_/_0.95)] text-[var(--surface-hi)] border-none font-bold active:scale-95"
+          className={cn(
+            "h-[52px] border-none font-black uppercase text-[12px] tracking-[0.1em] transition-all",
+            timer.isRunning ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-black hover:scale-[1.02] shadow-xl"
+          )}
         >
           {timer.isRunning ? 'Pause' : 'Start'}
         </Button>
         <Button
           variant="ghost"
           onClick={timer.reset}
-          className="h-[42px] border-[oklch(0.95_0.006_75_/_0.14)] text-[oklch(0.95_0.006_75_/_0.75)] hover:bg-white/5"
+          className="h-[52px] border-white/10 text-white/60 hover:bg-white/10 hover:text-white uppercase text-[11px] font-bold tracking-widest"
         >
           Reset
         </Button>
         <Button
           variant="ghost"
           onClick={timer.skip}
-          className="h-[42px] border-[oklch(0.95_0.006_75_/_0.14)] text-[oklch(0.95_0.006_75_/_0.75)] hover:bg-white/5"
+          className="h-[52px] border-white/10 text-white/60 hover:bg-white/10 hover:text-white uppercase text-[11px] font-bold tracking-widest"
         >
           Skip
         </Button>

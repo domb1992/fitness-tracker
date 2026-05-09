@@ -39,34 +39,34 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ sessions }) 
   const doneDays = week.filter((d) => d.on).length;
 
   return (
-    <div className="px-5 pb-[22px]">
-      <div className="flex justify-between mb-2.5">
-        <Typography variant="mono">Last 7 days</Typography>
-        <Typography variant="mono">{doneDays}/7 sessions</Typography>
+    <div className="px-6 pb-8">
+      <div className="flex justify-between items-center mb-4">
+        <Typography variant="mono" className="opacity-60">Consistency</Typography>
+        <Typography variant="mono" className="text-[var(--ink)] font-bold">{doneDays}/7 days</Typography>
       </div>
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-2">
         {week.map((d, i) => (
           <div
             key={i}
             onClick={() => d.sessionId && navigate(`/session/${d.sessionId}`)}
             className={cn(
-              'rounded-[var(--r-1)] py-2 text-center relative transition-all active:scale-95',
-              d.today ? 'border-[1.5px] border-[var(--ink)]' : 'border border-[var(--border)]',
-              d.on ? 'bg-[var(--ink)] text-[var(--paper)] shadow-sm' : d.today ? 'bg-[var(--paper-2)]' : 'bg-transparent',
-              d.sessionId ? 'cursor-pointer hover:shadow-md' : 'cursor-default'
+              'rounded-[var(--r-1)] py-2.5 text-center relative transition-all active:scale-90 select-none',
+              d.today ? 'bg-[var(--paper-2)] border-[1.5px] border-[var(--ink)]' : 'border border-transparent',
+              d.on ? 'bg-[var(--ink)] text-[var(--paper)] shadow-md' : 'bg-[var(--paper-2)]',
+              d.sessionId ? 'cursor-pointer hover:border-[var(--ink-4)]' : 'cursor-default'
             )}
           >
             <div className={cn(
-              'font-mono text-[9px] tracking-wider',
-              d.on ? 'opacity-60' : d.today ? 'opacity-80' : 'opacity-40'
+              'font-mono text-[9px] font-bold tracking-widest mb-0.5',
+              d.on ? 'opacity-50' : 'opacity-40'
             )}>
               {d.letter}
             </div>
-            <Typography variant="bignum" className="text-base mt-0.5 leading-none">
+            <Typography variant="bignum" className="text-base leading-none">
               {d.num}
             </Typography>
             {d.on && (
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--lime)]" />
+              <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--lime)]" />
             )}
           </div>
         ))}

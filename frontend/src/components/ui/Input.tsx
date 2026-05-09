@@ -9,23 +9,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, ...props }, ref) => {
     return (
-      <div className="w-full">
+      <div className="w-full group">
         {label && (
-          <label className="ft-label">
+          <label className="ft-label transition-opacity group-focus-within:opacity-100">
             {label}
           </label>
         )}
         <input
           ref={ref}
           className={cn(
-            'ft-input',
-            error && 'border-[var(--danger)] focus:border-[var(--danger)]',
+            'ft-input w-full',
+            error && 'border-[var(--danger)] focus:border-[var(--danger)] bg-[var(--danger)]/5',
             className
           )}
           {...props}
         />
         {error && (
-          <span className="mt-1 block font-mono text-[10px] uppercase tracking-wider text-[var(--danger)]">
+          <span className="mt-1.5 block font-mono text-[9px] uppercase tracking-widest text-[var(--danger)] font-bold">
             {error}
           </span>
         )}

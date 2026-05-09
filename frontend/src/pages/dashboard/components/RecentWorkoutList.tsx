@@ -21,44 +21,51 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
   if (recentSess.length === 0) return null;
 
   return (
-    <div className="px-5 pb-6">
-      <div className="flex justify-between items-baseline mb-3">
-        <Typography variant="h3">Recent Workouts</Typography>
+    <div className="px-6 pb-12">
+      <div className="flex justify-between items-center mb-4">
+        <Typography variant="h3" className="text-lg">Recent History</Typography>
         {sessions.length > 5 && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onShowAll}
-            className="bg-transparent border-none cursor-pointer p-0 font-mono text-[10px] tracking-wider text-[var(--ink-2)] underline underline-offset-[3px] hover:text-[var(--ink)] transition-colors"
+            className="h-7 px-2.5 text-[10px] uppercase font-bold tracking-wider rounded-full border-none bg-[var(--paper-2)] hover:bg-[var(--paper-3)]"
           >
             See all
-          </button>
+          </Button>
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         {recentSess.map((s) => (
           <Card
             key={s.id}
-            className="flex items-center overflow-hidden border-l-[3.5px]"
-            style={{ borderLeftColor: s.plan_color || 'var(--ink)' }}
+            className="flex items-center overflow-hidden p-0"
           >
             <button
               onClick={() => navigate(`/session/${s.id}`)}
-              className="flex-1 min-w-0 bg-transparent border-none cursor-pointer text-left p-[13px_10px_13px_14px] hover:bg-[var(--paper-2)] transition-colors"
+              className="flex-1 min-w-0 bg-transparent border-none cursor-pointer text-left p-[18px_10px_18px_18px] hover:bg-[var(--paper-2)] transition-colors"
             >
-              <div className="text-[13px] font-bold tracking-tight text-[var(--ink)] leading-tight truncate">
-                {s.plan_name}
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: s.plan_color || 'var(--ink)' }} />
+                <div className="text-[14px] font-bold tracking-tight text-[var(--ink)] leading-tight truncate">
+                  {s.plan_name}
+                </div>
               </div>
-              <Typography variant="mono" className="mt-1 normal-case text-[9px] opacity-70 block">
-                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {s.total_sets ?? 0} sets
+              <Typography variant="mono" className="normal-case text-[10px] opacity-50 block font-medium">
+                {timeAgo(s.completed_at!)} • {fmtDuration(s.duration_seconds)} • {s.total_sets ?? 0} sets
               </Typography>
             </button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(s.id)}
-              className="h-8 w-8 min-w-[32px] p-0 mr-3 text-[var(--ink-4)] border-[var(--border)] rounded-[var(--r-1)] hover:text-[var(--danger)] hover:border-[var(--danger)] active:scale-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(s.id);
+              }}
+              className="h-9 w-9 p-0 mr-4 text-[var(--ink-4)] border-none rounded-full bg-[var(--paper-2)] hover:text-[var(--danger)] hover:bg-[var(--danger)]/10 active:scale-90"
             >
-              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
               </svg>
             </Button>

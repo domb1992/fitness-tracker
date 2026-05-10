@@ -338,9 +338,27 @@ export default function ProgressPage() {
     <div className="ft-screen" style={{ paddingBottom: 'var(--nav-safe)' }}>
 
       {/* Header */}
-      <div style={{ padding: '14px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="mono-tag">Progress</span>
-        <button onClick={handleShare} aria-label={copied ? 'Copied' : 'Share progress'} className="icon-btn" style={{ color: copied ? 'oklch(0.5 0.18 145)' : undefined }}>
+      <div style={{ padding: '20px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <p style={{
+            margin: '0 0 3px', fontFamily: 'var(--mono)', fontSize: 9,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-4)',
+          }}>
+            Analytics
+          </p>
+          <h1 style={{
+            margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1,
+            color: 'var(--ink)',
+          }}>
+            Progress
+          </h1>
+        </div>
+        <button
+          onClick={handleShare}
+          aria-label={copied ? 'Copied' : 'Share progress'}
+          className="icon-btn"
+          style={{ color: copied ? 'oklch(0.5 0.18 145)' : undefined, marginTop: 4 }}
+        >
           {copied ? (
             <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em' }}>COPIED</span>
           ) : (
@@ -354,27 +372,32 @@ export default function ProgressPage() {
       </div>
 
       {/* Stat cards — total workouts + last 7 days */}
-      <div style={{ padding: '4px 20px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div className="surface" style={{ padding: '14px 16px' }}>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 8 }}>Total</div>
-          <div className="bignum" style={{ fontSize: 40, lineHeight: 1 }}>
+      <div style={{ padding: '16px 20px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div className="surface" style={{ padding: '16px 16px 14px' }}>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>All Time</div>
+          <div className="bignum" style={{ fontSize: 44, lineHeight: 1 }}>
             {stats?.totalWorkouts ?? 0}
           </div>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 4 }}>workouts</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>workouts</div>
         </div>
-        <div className="surface" style={{ padding: '14px 16px' }}>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 8 }}>Last 7 days</div>
-          <div className="bignum" style={{ fontSize: 40, lineHeight: 1, color: stats?.thisWeek ? 'oklch(0.42 0.16 145)' : undefined }}>
+        <div className="surface" style={{ padding: '16px 16px 14px' }}>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>Last 7 Days</div>
+          <div className="bignum" style={{
+            fontSize: 44, lineHeight: 1,
+            color: (stats?.thisWeek ?? 0) > 0 ? 'oklch(0.42 0.16 145)' : undefined,
+          }}>
             {stats?.thisWeek ?? 0}
           </div>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 4 }}>sessions</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>sessions</div>
         </div>
       </div>
 
       {/* Calendar — swipe or arrow to change month */}
       <div style={{ padding: '0 20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span className="mono-tag">{isCurrent ? 'This Month' : 'Month'}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+            {isCurrent ? 'This Month' : 'Month'}
+          </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button aria-label="Previous month" onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
               <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -434,8 +457,10 @@ export default function ProgressPage() {
       {/* ── Volume by Muscle Group ───────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <h3 className="section-title">Volume by Muscle</h3>
-          <span className="mono-tag">{monthName.split(' ')[0]}</span>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+            Volume by Muscle
+          </h3>
+          <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>{monthName.split(' ')[0]}</span>
         </div>
         <div className="surface" style={{ padding: '16px 14px' }}>
           {volumeLoading ? (
@@ -468,7 +493,9 @@ export default function ProgressPage() {
       {/* ── Lift Progression ─────────────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <h3 className="section-title">Lift Progression</h3>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+            Lift Progression
+          </h3>
           <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
             {liftLoading
               ? '…'

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Card, Button } from '../../../components/ui';
 import { WorkoutSession } from '../../../types';
 import { fmtDuration, timeAgo } from '../../../lib/utils';
 
@@ -11,58 +10,90 @@ interface RecentWorkoutListProps {
 }
 
 export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
-  sessions,
-  onShowAll,
-  onDelete,
+  sessions, onShowAll, onDelete,
 }) => {
-  const navigate = useNavigate();
-  const recentSess = sessions.slice(0, 5);
+  const navigate    = useNavigate();
+  const recentSess  = sessions.slice(0, 5);
 
   if (recentSess.length === 0) return null;
 
   return (
     <div className="px-5 pb-6">
-      <div className="flex justify-between items-baseline mb-3">
-        <Typography variant="h3">Recent Workouts</Typography>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12,
+      }}>
+        <h3 style={{
+          margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)',
+        }}>
+          Recent Workouts
+        </h3>
         {sessions.length > 5 && (
           <button
             onClick={onShowAll}
-            className="bg-transparent border-none cursor-pointer p-0 font-mono text-[10px] tracking-wider text-[var(--ink-2)] underline underline-offset-[3px] hover:text-[var(--ink)] transition-colors"
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.05em',
+              textTransform: 'uppercase', color: 'var(--ink-3)',
+              textDecoration: 'underline', textUnderlineOffset: 3,
+            }}
+            className="hover:text-[var(--ink)] transition-colors"
           >
             See all
           </button>
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {recentSess.map((s) => (
-          <Card
+          <div
             key={s.id}
-            className="flex items-center overflow-hidden border-l-[3.5px]"
-            style={{ borderLeftColor: s.plan_color || 'var(--ink)' }}
+            className="card"
+            style={{
+              display: 'flex', alignItems: 'center', overflow: 'hidden',
+              borderLeft: `3px solid ${s.plan_color || 'var(--ink)'}`,
+            }}
           >
             <button
               onClick={() => navigate(`/session/${s.id}`)}
-              className="flex-1 min-w-0 bg-transparent border-none cursor-pointer text-left p-[13px_10px_13px_14px] hover:bg-[var(--paper-2)] transition-colors"
+              style={{
+                flex: 1, minWidth: 0, background: 'transparent', border: 'none',
+                cursor: 'pointer', textAlign: 'left', padding: '13px 10px 13px 14px',
+              }}
+              className="hover:bg-[var(--paper-2)] transition-colors"
             >
-              <div className="text-[13px] font-bold tracking-tight text-[var(--ink)] leading-tight truncate">
+              <div style={{
+                fontSize: 13, fontWeight: 700, letterSpacing: '-0.02em',
+                color: 'var(--ink)', lineHeight: 1.2,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
                 {s.plan_name}
               </div>
-              <Typography variant="mono" className="mt-1 normal-case text-[9px] opacity-70 block">
+              <div style={{
+                marginTop: 4, fontFamily: 'var(--mono)', fontSize: 9,
+                letterSpacing: '0.04em', color: 'var(--ink-3)',
+              }}>
                 {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {s.total_sets ?? 0} sets
-              </Typography>
+              </div>
             </button>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => onDelete(s.id)}
-              className="h-8 w-8 min-w-[32px] p-0 mr-3 text-[var(--ink-4)] border-[var(--border)] rounded-[var(--r-1)] hover:text-[var(--danger)] hover:border-[var(--danger)] active:scale-90"
+              aria-label={`Delete ${s.plan_name} workout`}
+              style={{
+                width: 32, height: 32, marginRight: 10, flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'transparent', border: '1px solid var(--border)',
+                borderRadius: 'var(--r-1)', cursor: 'pointer',
+                color: 'var(--ink-4)',
+                transition: 'color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease-spring)',
+              }}
+              className="hover:text-[var(--danger)] hover:border-[var(--danger)] active:scale-90"
             >
-              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+              <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth={1.8} strokeLinecap="round" aria-hidden>
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
               </svg>
-            </Button>
-          </Card>
+            </button>
+          </div>
         ))}
       </div>
     </div>

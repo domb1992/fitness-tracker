@@ -19,10 +19,11 @@
   --paper-3: oklch(0.938 0.013 80);
 
   /* ── Accent — Lime (primary brand) ──────────────────────────────────────── */
-  --lime:      oklch(0.84 0.22 132);
-  --lime-ink:  oklch(0.19 0.10 132);
-  --lime-soft: oklch(0.96 0.08 132);
-  --lime-glow: oklch(0.84 0.22 132 / 0.28);
+  --lime:       oklch(0.84 0.22 132);
+  --lime-ink:   oklch(0.19 0.10 132);
+  --lime-soft:  oklch(0.96 0.08 132);
+  --lime-glow:  oklch(0.84 0.22 132 / 0.28);
+  --lime-glow2: oklch(0.84 0.22 132 / 0.45);
 
   /* ── Accent — Clay (secondary) ──────────────────────────────────────────── */
   --clay:      oklch(0.72 0.09 45);
@@ -214,13 +215,35 @@ input[type='number'] { -moz-appearance: textfield; }
   font-weight: 500;
 }
 
-/* Page section headers (replaces raw h3 inline styles) */
+/* Page section headers */
 .section-title {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0;
+}
+
+/* Page-level h1 heading */
+.page-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Eyebrow label above page title */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -303,10 +326,10 @@ input[type='number'] { -moz-appearance: textfield; }
 .block-btn.lime {
   background: var(--lime);
   color: var(--lime-ink);
-  box-shadow: 0 2px 12px var(--lime-glow);
+  box-shadow: 0 2px 16px var(--lime-glow);
 }
 .block-btn.lime:not(:disabled):hover {
-  box-shadow: 0 4px 20px var(--lime-glow);
+  box-shadow: 0 6px 24px var(--lime-glow2);
 }
 .block-btn.danger {
   background: var(--danger);
@@ -499,6 +522,7 @@ input[type='number'] { -moz-appearance: textfield; }
 }
 .nav-item.active {
   color: var(--ink);
+  font-weight: 700;
 }
 
 .nav-item-label {
@@ -511,11 +535,12 @@ input[type='number'] { -moz-appearance: textfield; }
 
 /* Active indicator — wide lime strip */
 .nav-item-dot {
-  width: 20px;
+  width: 24px;
   height: 3px;
   border-radius: var(--r-full);
   background: var(--lime);
-  margin-top: 1px;
+  margin-top: 2px;
+  box-shadow: 0 0 8px var(--lime-glow);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -632,14 +657,15 @@ input[type='number'] { -moz-appearance: textfield; }
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  gap: 12px;
+  gap: 14px;
   text-align: center;
 }
 .empty-state-icon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--r-full);
   background: var(--paper-3);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;

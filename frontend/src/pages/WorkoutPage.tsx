@@ -29,13 +29,13 @@ export default function WorkoutPage() {
   const isOnline     = useOnlineStatus();
   const elapsedClock = useWorkoutClock(startedAt);  // shared hook
 
-  const [loading,      setLoading]      = useState(false);
-  const [completing,   setCompleting]   = useState(false);
-  const [error,        setError]        = useState('');
-  const [showConfirm,  setShowConfirm]  = useState(false);
-  const [showAbandon,  setShowAbandon]  = useState(false);
-  const [lastSet,      setLastSet]      = useState<string>('');
-  const [focusedIdx,   setFocusedIdx]   = useState(0);
+  const [loading,     setLoading]     = useState(false);
+  const [completing,  setCompleting]  = useState(false);
+  const [error,       setError]       = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showAbandon, setShowAbandon] = useState(false);
+  const [lastSet,     setLastSet]     = useState('');
+  const [focusedIdx,  setFocusedIdx]  = useState(0);
 
   useEffect(() => {
     if (syncPending) { navigate('/dashboard', { replace: true }); }

@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Geist"', 'system-ui', 'sans-serif'],
-        mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
+        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
       },
     },
   },

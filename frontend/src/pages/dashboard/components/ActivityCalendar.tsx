@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography } from '../../../components/ui';
 import { cn } from '../../../lib/utils';
 import { WorkoutSession } from '../../../types';
 
@@ -8,67 +7,119 @@ interface ActivityCalendarProps {
   sessions: WorkoutSession[];
 }
 
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ sessions }) => {
   const navigate = useNavigate();
 
-  const buildWeekStrip = (sessions: WorkoutSession[]) => {
-    const byDate: Record<string, string> = {};
-    for (const s of sessions) {
-      if (s.completed_at) {
-        const key = new Date(s.completed_at).toDateString();
-        if (!byDate[key]) byDate[key] = s.id;
-      }
+  const byDate: Record<string, string> = {};
+  for (const s of sessions) {
+    if (s.completed_at) {
+      const key = new Date(s.completed_at).toDateString();
+      if (!byDate[key]) byDate[key] = s.id;
     }
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toDateString();
-      days.push({
-        letter: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()],
-        num: d.getDate(),
-        on: !!byDate[key],
-        today: i === 0,
-        sessionId: byDate[key] ?? null,
-      });
-    }
-    return days;
-  };
+  }
 
-  const week = buildWeekStrip(sessions);
-  const doneDays = week.filter((d) => d.on).length;
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toDateString();
+    return {
+      label: DAY_LABELS[d.getDay()].slice(0, 1),
+      num:   d.getDate(),
+      on:    !!byDate[key],
+      today: i === 6,
+      sessionId: byDate[key] ?? null,
+    };
+  });
+
+  const doneDays = days.filter((d) => d.on).length;
+
+  // Calculate running streak
+  let streak = 0;
+  for (let i = 6; i >= 0; i--) {
+    if (days[i].on) streak++;
+    else break;
+  }
 
   return (
     <div className="px-5 pb-[22px]">
-      <div className="flex justify-between mb-2.5">
-        <Typography variant="mono">Last 7 days</Typography>
-        <Typography variant="mono">{doneDays}/7 sessions</Typography>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.07em',
+          textTransform: 'uppercase', color: 'var(--ink-3)', fontWeight: 500,
+        }}>
+          Last 7 days
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {streak >= 3 && (
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.05em',
+              color: 'oklch(0.60 0.18 55)', background: 'oklch(0.97 0.06 60)',
+              padding: '2px 8px', borderRadius: 'var(--r-full)',
+              border: '1px solid oklch(0.85 0.12 55)',
+              fontWeight: 700,
+            }}>
+              🔥 {streak} STREAK
+            </span>
+          )}
+          <span style={{
+            fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.05em',
+            color: doneDays > 0 ? 'var(--ink-2)' : 'var(--ink-4)',
+          }}>
+            {doneDays}/7
+          </span>
+        </div>
       </div>
-      <div className="grid grid-cols-7 gap-1.5">
-        {week.map((d, i) => (
-          <div
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+        {days.map((d, i) => (
+          <button
             key={i}
             onClick={() => d.sessionId && navigate(`/session/${d.sessionId}`)}
-            className={cn(
-              'rounded-[var(--r-1)] py-2 text-center relative transition-all active:scale-95',
-              d.today ? 'border-[1.5px] border-[var(--ink)]' : 'border border-[var(--border)]',
-              d.on ? 'bg-[var(--ink)] text-[var(--paper)] shadow-sm' : d.today ? 'bg-[var(--paper-2)]' : 'bg-transparent',
-              d.sessionId ? 'cursor-pointer hover:shadow-md' : 'cursor-default'
-            )}
+            disabled={!d.sessionId}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              padding: '9px 4px 8px',
+              borderRadius: 'var(--r-1)',
+              border: d.today
+                ? '1.5px solid var(--ink)'
+                : d.on
+                  ? 'none'
+                  : '1px solid var(--border)',
+              background: d.on
+                ? (d.today ? 'var(--ink)' : 'var(--ink)')
+                : d.today
+                  ? 'var(--paper-2)'
+                  : 'transparent',
+              cursor: d.sessionId ? 'pointer' : 'default',
+              transition: 'transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease)',
+              boxShadow: d.on ? 'var(--shadow-sm)' : 'none',
+            }}
+            className={cn(d.sessionId && 'hover:shadow-md active:scale-95')}
           >
-            <div className={cn(
-              'font-mono text-[9px] tracking-wider',
-              d.on ? 'opacity-60' : d.today ? 'opacity-80' : 'opacity-40'
-            )}>
-              {d.letter}
-            </div>
-            <Typography variant="bignum" className="text-base mt-0.5 leading-none">
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 8,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: d.on ? 'oklch(0.95 0.004 85 / 0.50)' : d.today ? 'var(--ink-3)' : 'var(--ink-4)',
+              marginBottom: 4, lineHeight: 1,
+            }}>
+              {d.label}
+            </span>
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 15, fontWeight: 700,
+              letterSpacing: '-0.03em', lineHeight: 1,
+              color: d.on ? 'oklch(0.97 0.004 85)' : d.today ? 'var(--ink)' : 'var(--ink-3)',
+            }}>
               {d.num}
-            </Typography>
+            </span>
             {d.on && (
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--lime)]" />
+              <span style={{
+                width: 4, height: 4, borderRadius: '50%',
+                background: 'var(--lime)', marginTop: 5, display: 'block',
+              }} />
             )}
-          </div>
+          </button>
         ))}
       </div>
     </div>

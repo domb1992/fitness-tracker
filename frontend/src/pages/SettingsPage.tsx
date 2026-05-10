@@ -2,37 +2,72 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useThemeStore, ThemeChoice } from '../store/store';
 import { supabase } from '../lib/supabase';
-import { Button, Input, Card, Typography, Badge } from '../components/ui';
+import { Button, Input, Badge } from '../components/ui';
 
-const THEME_OPTIONS: { value: ThemeChoice; label: string; Icon: React.FC }[] = [
-  { value: 'light',  label: 'Light',  Icon: () => <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> },
-  { value: 'dark',   label: 'Dark',   Icon: () => <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> },
-  { value: 'system', label: 'Auto',   Icon: () => <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8M12 17v4"/></svg> },
+const THEME_OPTIONS: { value: ThemeChoice; label: string; icon: React.ReactNode }[] = [
+  {
+    value: 'light', label: 'Light',
+    icon: (
+      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+        <circle cx="12" cy="12" r="5"/>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+    ),
+  },
+  {
+    value: 'dark', label: 'Dark',
+    icon: (
+      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    ),
+  },
+  {
+    value: 'system', label: 'Auto',
+    icon: (
+      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+    ),
+  },
 ];
 
 declare const __APP_VERSION__: string;
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{
+      margin: '0 0 14px',
+      fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.08em',
+      textTransform: 'uppercase', color: 'var(--ink-4)', fontWeight: 600,
+    }}>
+      {children}
+    </p>
+  );
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { user, signOut, updateName } = useAuthStore();
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme }           = useThemeStore();
 
-  const [name,           setName]           = useState(user?.name || '');
-  const [email,          setEmail]          = useState(user?.email || '');
-  const [profileSaving,  setProfileSaving]  = useState(false);
-  const [profileSaved,   setProfileSaved]   = useState(false);
-  const [profileError,   setProfileError]   = useState('');
+  const [name,             setName]             = useState(user?.name || '');
+  const [email,            setEmail]            = useState(user?.email || '');
+  const [profileSaving,    setProfileSaving]    = useState(false);
+  const [profileSaved,     setProfileSaved]     = useState(false);
+  const [profileError,     setProfileError]     = useState('');
   const [emailConfirmSent, setEmailConfirmSent] = useState(false);
 
-  const [newPw,          setNewPw]          = useState('');
-  const [confirmPw,      setConfirmPw]      = useState('');
-  const [pwSaving,       setPwSaving]       = useState(false);
-  const [pwSaved,        setPwSaved]        = useState(false);
-  const [pwError,        setPwError]        = useState('');
+  const [newPw,    setNewPw]    = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwSaved,  setPwSaved]  = useState(false);
+  const [pwError,  setPwError]  = useState('');
 
-  const [resetSending,   setResetSending]   = useState(false);
-  const [resetSent,      setResetSent]      = useState(false);
-  const [resetError,     setResetError]     = useState('');
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent,    setResetSent]    = useState(false);
+  const [resetError,   setResetError]   = useState('');
 
   const profileChanged = name !== user?.name || email !== user?.email;
 
@@ -89,155 +124,193 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="ft-screen animate-fade-in bg-[var(--paper)]" style={{ paddingBottom: 'calc(var(--nav-safe) + 20px)' }}>
+    <div className="ft-screen animate-fade-in" style={{ paddingBottom: 'calc(var(--nav-safe) + 24px)' }}>
+
       {/* Header */}
-      <div className="p-[20px_20px_16px]">
-        <Typography variant="h1" className="text-2xl mb-1 block">Settings</Typography>
-        <Typography variant="mono" className="text-[var(--ink-4)]">Manage your account</Typography>
+      <div style={{ padding: '20px 20px 20px' }}>
+        <p style={{
+          margin: '0 0 3px', fontFamily: 'var(--mono)', fontSize: 9,
+          letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-4)',
+        }}>
+          Account
+        </p>
+        <h1 style={{
+          margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em',
+          lineHeight: 1.1, color: 'var(--ink)',
+        }}>
+          Settings
+        </h1>
       </div>
 
-      <div className="flex flex-col gap-5 px-5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '0 20px' }}>
 
         {/* Profile */}
-        <Card className="p-5 flex flex-col gap-4 border-none bg-[var(--paper-2)]/50">
-          <Typography variant="mono" className="mb-1 block opacity-60">Profile</Typography>
-
-          <Input
-            label="Name"
-            value={name}
-            onChange={(e) => { setName(e.target.value); setProfileSaved(false); }}
-            placeholder="Your name"
-          />
-
-          <Input
-            label="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setProfileSaved(false); setEmailConfirmSent(false); }}
-            placeholder="you@example.com"
-          />
-
-          {emailConfirmSent && (
-            <Badge variant="info" className="py-2.5 px-4 text-[10px]">
-              Confirmation sent to <strong>{email.trim().toLowerCase()}</strong> — click the link to update.
-            </Badge>
-          )}
-          {profileError && <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{profileError}</Badge>}
-
-          <Button
-            onClick={handleSaveProfile}
-            disabled={profileSaving || !profileChanged}
-            isLoading={profileSaving}
-            className="h-11 mt-1 font-bold"
-            rightIcon={profileSaved && !profileSaving && (
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <div className="surface" style={{ padding: '18px 18px' }}>
+          <SectionLabel>Profile</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Input
+              label="Name"
+              value={name}
+              onChange={(e) => { setName(e.target.value); setProfileSaved(false); }}
+              placeholder="Your name"
+            />
+            <Input
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setProfileSaved(false); setEmailConfirmSent(false); }}
+              placeholder="you@example.com"
+            />
+            {emailConfirmSent && (
+              <Badge variant="info" className="py-2.5 px-4 text-[10px]">
+                Confirmation sent to <strong>{email.trim().toLowerCase()}</strong> — click the link to update.
+              </Badge>
             )}
-          >
-            {profileSaved ? 'Saved' : 'Save Profile'}
-          </Button>
-        </Card>
+            {profileError && (
+              <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{profileError}</Badge>
+            )}
+            <Button
+              onClick={handleSaveProfile}
+              disabled={profileSaving || !profileChanged}
+              isLoading={profileSaving}
+              className="h-11 mt-1"
+              rightIcon={profileSaved && !profileSaving && (
+                <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              )}
+            >
+              {profileSaved ? 'Saved' : 'Save Profile'}
+            </Button>
+          </div>
+        </div>
 
         {/* Appearance */}
-        <Card className="p-5 border-none bg-[var(--paper-2)]/50">
-          <Typography variant="mono" className="mb-4 block opacity-60">Appearance</Typography>
-          <div className="flex items-center justify-between">
+        <div className="surface" style={{ padding: '18px 18px' }}>
+          <SectionLabel>Appearance</SectionLabel>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div className="text-sm font-bold text-[var(--ink)]">Theme</div>
-              <Typography variant="mono" className="text-[9px] normal-case opacity-50 block mt-0.5">
-                {theme === 'system' ? 'Following device setting' : `Always ${theme} mode`}
-              </Typography>
+              <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                Theme
+              </div>
+              <div style={{
+                marginTop: 3, fontFamily: 'var(--mono)', fontSize: 9,
+                letterSpacing: '0.04em', color: 'var(--ink-4)',
+              }}>
+                {theme === 'system' ? 'Following device' : `Always ${theme}`}
+              </div>
             </div>
             <div className="seg-ctrl">
-              {THEME_OPTIONS.map(({ value, label, Icon }) => (
+              {THEME_OPTIONS.map(({ value, label, icon }) => (
                 <button
                   key={value}
                   className={`seg-btn flex items-center gap-1.5 px-3 h-8 ${theme === value ? 'active' : ''}`}
                   onClick={() => setTheme(value)}
                 >
-                  <Icon />
+                  {icon}
                   {label}
                 </button>
               ))}
             </div>
           </div>
-        </Card>
+        </div>
 
-        {/* Password */}
-        <Card className="p-5 flex flex-col gap-4 border-none bg-[var(--paper-2)]/50">
-          <Typography variant="mono" className="mb-1 block opacity-60">Security</Typography>
+        {/* Security */}
+        <div className="surface" style={{ padding: '18px 18px' }}>
+          <SectionLabel>Security</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <Input
+              label="New Password"
+              type="password"
+              value={newPw}
+              onChange={(e) => { setNewPw(e.target.value); setPwError(''); setPwSaved(false); }}
+              placeholder="Min. 8 characters"
+            />
+            <Input
+              label="Confirm New Password"
+              type="password"
+              value={confirmPw}
+              onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); setPwSaved(false); }}
+              placeholder="Repeat new password"
+            />
+            {pwError && (
+              <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{pwError}</Badge>
+            )}
+            {pwSaved && (
+              <Badge variant="success" className="py-2.5 px-4 text-[10px]">Password updated successfully.</Badge>
+            )}
+            <Button
+              onClick={handleUpdatePassword}
+              disabled={pwSaving || !newPw || !confirmPw}
+              isLoading={pwSaving}
+              className="h-11"
+            >
+              Update Password
+            </Button>
 
-          <Input
-            label="New Password"
-            type="password"
-            value={newPw}
-            onChange={(e) => { setNewPw(e.target.value); setPwError(''); setPwSaved(false); }}
-            placeholder="Min. 8 characters"
-          />
-
-          <Input
-            label="Confirm New Password"
-            type="password"
-            value={confirmPw}
-            onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); setPwSaved(false); }}
-            placeholder="Repeat new password"
-          />
-
-          {pwError && <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{pwError}</Badge>}
-          {pwSaved && <Badge variant="success" className="py-2.5 px-4 text-[10px]">Password updated successfully.</Badge>}
-
-          <Button
-            onClick={handleUpdatePassword}
-            disabled={pwSaving || !newPw || !confirmPw}
-            isLoading={pwSaving}
-            className="h-11 mt-1 font-bold"
-          >
-            Update Password
-          </Button>
-
-          <div className="flex items-center gap-3 my-1">
-            <div className="flex-1 h-px bg-[var(--border)]" />
-            <Typography variant="mono" className="text-[9px] opacity-40">OR</Typography>
-            <div className="flex-1 h-px bg-[var(--border)]" />
-          </div>
-
-          {resetSent ? (
-            <Badge variant="info" className="py-2.5 px-4 text-[10px]">
-              Check your email — reset link sent to <strong>{user?.email}</strong>.
-            </Badge>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {resetError && <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{resetError}</Badge>}
-              <Button
-                variant="ghost"
-                onClick={handleResetPassword}
-                isLoading={resetSending}
-                className="h-11 text-xs"
-              >
-                Send Reset Link via Email
-              </Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{
+                fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em',
+                color: 'var(--ink-4)', opacity: 0.5,
+              }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
-          )}
-        </Card>
 
-        {/* Sign Out */}
-        <Button
-          variant="danger"
+            {resetSent ? (
+              <Badge variant="info" className="py-2.5 px-4 text-[10px]">
+                Check your email — reset link sent to <strong>{user?.email}</strong>.
+              </Badge>
+            ) : (
+              <>
+                {resetError && (
+                  <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{resetError}</Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  onClick={handleResetPassword}
+                  isLoading={resetSending}
+                  className="h-11 text-xs"
+                >
+                  Send Reset Link via Email
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Sign out */}
+        <button
           onClick={handleLogout}
-          className="h-12 font-bold shadow-sm bg-[var(--danger-soft)] text-[var(--danger)] border border-[var(--danger)]/10 hover:bg-[var(--danger)] hover:text-white transition-all"
-          leftIcon={(
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-            </svg>
-          )}
+          style={{
+            width: '100%', height: 48,
+            background: 'var(--danger-soft)',
+            color: 'var(--danger)',
+            border: '1px solid oklch(0.54 0.22 25 / 0.15)',
+            borderRadius: 'var(--r-2)',
+            fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 700,
+            letterSpacing: '-0.01em',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            cursor: 'pointer',
+            transition: 'background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease)',
+          }}
+          className="hover:bg-[var(--danger)] hover:text-white active:scale-[0.98]"
         >
+          <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
           Sign Out
-        </Button>
+        </button>
 
         {/* Version */}
-        <div className="text-center py-4">
-          <Typography variant="mono" className="text-[9px] opacity-30">
-            Version {__APP_VERSION__}
-          </Typography>
+        <div style={{ textAlign: 'center', paddingBottom: 8 }}>
+          <span style={{
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.05em',
+            color: 'var(--ink-4)', opacity: 0.4,
+          }}>
+            FitTrack v{__APP_VERSION__}
+          </span>
         </div>
 
       </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Card, Button } from '../../../components/ui';
+import { Button } from '../../../components/ui';
 import { TrainingPlan } from '../../../types';
 import { timeAgo } from '../../../lib/utils';
 
@@ -13,68 +13,143 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
 
   return (
     <div className="px-5 pb-[22px]">
-      <div className="flex justify-between items-baseline mb-3">
-        <Typography variant="h3">Programs</Typography>
-        <Typography variant="mono">{plans.length} active</Typography>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+        <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+          Programs
+        </h3>
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.05em',
+          color: 'var(--ink-4)',
+        }}>
+          {plans.length} {plans.length === 1 ? 'plan' : 'plans'}
+        </span>
       </div>
 
       {plans.length === 0 ? (
-        <div className="empty-state border border-dashed border-[var(--border)] rounded-[var(--r-2)] p-[36px_20px]">
-          <div className="empty-state-icon mb-3">
-            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '40px 20px', gap: 14,
+          border: '1.5px dashed var(--border)', borderRadius: 'var(--r-2)',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%',
+            background: 'var(--paper-3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--ink-3)',
+          }}>
+            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14M5 12h14"/>
             </svg>
           </div>
-          <Typography variant="mono" className="mb-4 block">No plans yet</Typography>
-          <Button onClick={() => navigate('/setup')} className="max-w-[180px] mx-auto h-12">
+          <div>
+            <p style={{
+              margin: '0 0 4px', fontFamily: 'var(--mono)', fontSize: 10,
+              letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--ink-3)',
+            }}>
+              No plans yet
+            </p>
+            <p style={{
+              margin: 0, fontSize: 12, color: 'var(--ink-4)', lineHeight: 1.5,
+            }}>
+              Create your first training plan to get started
+            </p>
+          </div>
+          <Button onClick={() => navigate('/setup')} className="max-w-[180px] mx-auto h-11">
             Create first plan
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {plans.map((plan) => (
-            <Card
+            <div
               key={plan.id}
-              className="flex items-center overflow-hidden border-l-[3.5px]"
-              style={{ borderLeftColor: plan.color || 'var(--ink)' }}
+              className="card"
+              style={{
+                display: 'flex', alignItems: 'center', overflow: 'hidden',
+                borderLeft: `3px solid ${plan.color || 'var(--ink)'}`,
+              }}
             >
               <button
                 onClick={() => navigate(`/plan/${plan.id}`)}
-                className="flex-1 min-w-0 bg-transparent border-none cursor-pointer text-left p-[14px_12px_14px_14px] hover:bg-[var(--paper-2)] transition-colors"
+                style={{
+                  flex: 1, minWidth: 0, background: 'transparent', border: 'none',
+                  cursor: 'pointer', textAlign: 'left', padding: '14px 10px 14px 14px',
+                }}
+                className="hover:bg-[var(--paper-2)] transition-colors"
               >
-                <div className="text-sm font-bold tracking-tight text-[var(--ink)] leading-tight">
+                <div style={{
+                  fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em',
+                  color: 'var(--ink)', lineHeight: 1.2,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
                   {plan.name}
                 </div>
-                <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1.5 opacity-70">
-                  <Typography variant="mono" className="text-[9px]">{plan.exercise_count} exercises</Typography>
-                  <span className="text-[var(--ink-4)] text-[9px]">•</span>
-                  <Typography variant="mono" className="text-[9px]">{plan.session_count} sessions</Typography>
-                  <span className="text-[var(--ink-4)] text-[9px]">•</span>
-                  <Typography variant="mono" className="text-[9px] normal-case">
+                <div style={{
+                  display: 'flex', flexWrap: 'wrap', gap: '2px 8px',
+                  marginTop: 5,
+                }}>
+                  <span style={{
+                    fontFamily: 'var(--mono)', fontSize: 9,
+                    letterSpacing: '0.04em', color: 'var(--ink-4)',
+                  }}>
+                    {plan.exercise_count} exercises
+                  </span>
+                  <span style={{ color: 'var(--ink-4)', fontSize: 9 }}>·</span>
+                  <span style={{
+                    fontFamily: 'var(--mono)', fontSize: 9,
+                    letterSpacing: '0.04em', color: 'var(--ink-4)',
+                  }}>
+                    {plan.session_count} sessions
+                  </span>
+                  <span style={{ color: 'var(--ink-4)', fontSize: 9 }}>·</span>
+                  <span style={{
+                    fontFamily: 'var(--mono)', fontSize: 9,
+                    color: 'var(--ink-3)',
+                  }}>
                     {plan.last_used ? timeAgo(plan.last_used) : 'Never done'}
-                  </Typography>
+                  </span>
                 </div>
               </button>
-              <div className="pr-3 pl-1 flex-shrink-0">
-                <Button
-                  size="sm"
+              <div style={{ paddingRight: 12, paddingLeft: 4, flexShrink: 0 }}>
+                <button
                   onClick={() => navigate(`/workout/${plan.id}`)}
-                  rightIcon={(
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M13 6l6 6-6 6"/>
-                    </svg>
-                  )}
-                  className="h-9 px-3.5 bg-[var(--ink)] text-[var(--paper)] font-bold shadow-sm active:scale-95"
+                  style={{
+                    height: 36, paddingLeft: 14, paddingRight: 14,
+                    background: 'var(--ink)', color: 'var(--paper)',
+                    border: 'none', borderRadius: 'var(--r-1)',
+                    fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 700,
+                    letterSpacing: '-0.01em',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    cursor: 'pointer', flexShrink: 0,
+                    boxShadow: 'var(--shadow-xs)',
+                    transition: 'transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease)',
+                  }}
+                  className="active:scale-95 hover:shadow-sm"
                 >
+                  <svg width={9} height={9} viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden>
+                    <path d="M7 4.5v15l13-7.5z"/>
+                  </svg>
                   Start
-                </Button>
+                </button>
               </div>
-            </Card>
+            </div>
           ))}
 
           <button
             onClick={() => navigate('/setup')}
-            className="w-full mt-1 h-11 bg-transparent border border-dashed border-[var(--border)] rounded-[var(--r-2)] font-mono text-[10px] tracking-widest uppercase text-[var(--ink-3)] cursor-pointer hover:bg-[var(--paper-2)] transition-colors active:scale-[0.99]"
+            style={{
+              width: '100%', marginTop: 4, height: 42,
+              background: 'transparent',
+              border: '1.5px dashed var(--border)',
+              borderRadius: 'var(--r-2)',
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em',
+              textTransform: 'uppercase', color: 'var(--ink-4)',
+              cursor: 'pointer',
+              transition: 'background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease)',
+            }}
+            className="hover:bg-[var(--paper-2)] hover:text-[var(--ink-2)] active:scale-[0.99]"
           >
             + Add New Plan
           </button>

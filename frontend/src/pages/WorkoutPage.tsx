@@ -15,6 +15,7 @@ import { WarmupExerciseCard } from './workout/components/WarmupExerciseCard';
 import { StrengthExerciseCard } from './workout/components/StrengthExerciseCard';
 import { RestTimerPanel } from './workout/components/RestTimerPanel';
 import { WorkoutDialogs } from './workout/components/WorkoutDialogs';
+import { ExerciseInfoPanel } from './workout/components/ExerciseInfoPanel';
 
 export default function WorkoutPage() {
   const { planId } = useParams<{ planId: string }>();
@@ -250,6 +251,14 @@ export default function WorkoutPage() {
               onRemoveSet={removeSet}
             />
           )
+        )}
+
+        {/* Form guide + muscle map — below the exercise card */}
+        {focused && focused.ex.exercise.exercise_type !== 'warmup' && (
+          <ExerciseInfoPanel
+            key={`guide-${focused.ex.exercise.id}`}
+            exercise={focused.ex.exercise}
+          />
         )}
 
         {/* Finish CTA — only appears when all exercises are done */}

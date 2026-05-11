@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { plansApi } from '../api/client';
 import { Exercise, TrainingPlan } from '../types';
 import { recognizeExercise } from '../lib/exerciseDatabase';
 
 export default function SetupPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [saving,     setSaving]     = useState(false);
   const [addingEx,   setAddingEx]   = useState(false);
@@ -20,7 +22,7 @@ export default function SetupPage() {
   const COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
   async function createPlan() {
-    if (!planName.trim()) { setError('Please enter a plan name'); return; }
+    if (!planName.trim()) { setError(t('plan.planNameRequired')); return; }
     setSaving(true); setError('');
     try {
       const plan = await plansApi.create({ name: planName, description: planDesc, color: planColor });
@@ -74,9 +76,9 @@ export default function SetupPage() {
           </svg>
         </button>
         <div>
-          <span className="mono-tag">New Plan</span>
+          <span className="mono-tag">{t('plan.newPlan')}</span>
           <h1 style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em' }}>
-            {currentPlan ? currentPlan.name : 'Create Plan'}
+            {currentPlan ? currentPlan.name : t('plan.createPlan')}
           </h1>
         </div>
       </div>
@@ -86,20 +88,20 @@ export default function SetupPage() {
           <div className="surface" style={{ padding: '18px 16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label className="ft-label">Plan Name</label>
+                <label className="ft-label">{t('plan.planName')}</label>
                 <input className="ft-input" type="text" value={planName}
                   onChange={(e) => setPlanName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && createPlan()}
-                  placeholder="e.g. Push Day" />
+                  placeholder={t('plan.planNamePlaceholder')} />
               </div>
               <div>
-                <label className="ft-label">Description (optional)</label>
+                <label className="ft-label">{t('plan.description')}</label>
                 <input className="ft-input" type="text" value={planDesc}
                   onChange={(e) => setPlanDesc(e.target.value)}
-                  placeholder="e.g. Chest, shoulders, triceps" />
+                  placeholder={t('plan.descriptionPlaceholder')} />
               </div>
               <div>
-                <label className="ft-label">Color</label>
+                <label className="ft-label">{t('plan.color')}</label>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
                   {COLORS.map((c) => (
                     <button key={c} onClick={() => setPlanColor(c)} style={{
@@ -114,7 +116,7 @@ export default function SetupPage() {
                 <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'oklch(0.45 0.12 30)' }}>{error}</div>
               )}
               <button className="block-btn" onClick={createPlan} disabled={saving}>
-                <span>{saving ? 'Creating…' : 'Create Plan'}</span>
+                <span>{saving ? t('plan.creating') : t('plan.createPlan')}</span>
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor"
                   strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -127,8 +129,8 @@ export default function SetupPage() {
             {/* Existing exercises */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-                <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Exercises</h3>
-                <span className="mono-tag">{exercises.length} added</span>
+                <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{t('plan.exercises')}</h3>
+                <span className="mono-tag">{t('plan.exercisesAdded', { count: exercises.length })}</span>
               </div>
 
               {exercises.length === 0 ? (
@@ -136,7 +138,7 @@ export default function SetupPage() {
                   border: '1px dashed var(--hair)', borderRadius: 'var(--r-2)',
                   padding: '24px 16px', textAlign: 'center',
                 }}>
-                  <p className="mono-tag">No exercises yet — add some below</p>
+                  <p className="mono-tag">{t('plan.noExercisesYet')}</p>
                 </div>
               ) : (
                 <div style={{ border: '1px solid var(--hair)', borderRadius: 'var(--r-2)', overflow: 'hidden' }}>
@@ -172,21 +174,21 @@ export default function SetupPage() {
 
             {/* Add exercise form */}
             <div className="surface" style={{ padding: '16px' }}>
-              <p className="mono-tag" style={{ marginBottom: 10 }}>Add Exercise</p>
+              <p className="mono-tag" style={{ marginBottom: 10 }}>{t('plan.addExercise')}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <input className="ft-input" type="text" value={exForm.name}
                   onChange={(e) => setExForm((f) => ({ ...f, name: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && addExercise()}
-                  placeholder="Exercise name (e.g. Bench Press)" />
+                  placeholder={t('plan.exercisePlaceholder')} />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>
-                    <label className="ft-label">Sets</label>
+                    <label className="ft-label">{t('plan.sets')}</label>
                     <input className="ft-input" type="number" value={exForm.sets}
                       onChange={(e) => setExForm((f) => ({ ...f, sets: e.target.value }))}
                       min={1} max={10} style={{ textAlign: 'center', fontFamily: 'var(--mono)' }} />
                   </div>
                   <div>
-                    <label className="ft-label">Target Reps</label>
+                    <label className="ft-label">{t('plan.targetReps')}</label>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                       <input
                         className="ft-input" type="text" value={exForm.target_reps}
@@ -227,7 +229,7 @@ export default function SetupPage() {
                     strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
-                  {addingEx ? 'Adding…' : 'Add Exercise'}
+                  {addingEx ? t('common.saving') : t('plan.addExercise')}
                 </button>
               </div>
             </div>
@@ -241,7 +243,7 @@ export default function SetupPage() {
                 <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" stroke="none">
                   <path d="M7 4.5v15l13-7.5z"/>
                 </svg>
-                Done — Start Training
+                {t('plan.doneStartTraining')}
               </span>
               <span className="mono-tag" style={{ color: 'var(--lime-ink)', opacity: 0.7 }}>GO</span>
             </button>

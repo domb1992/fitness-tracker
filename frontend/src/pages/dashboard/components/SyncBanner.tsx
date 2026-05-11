@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '../../../components/ui';
 
 interface SyncBannerProps {
@@ -14,6 +15,7 @@ export const SyncBanner: React.FC<SyncBannerProps> = ({
   syncing,
   onSync,
 }) => {
+  const { t } = useTranslation();
   if (!syncPending && isOnline) return null;
 
   return (
@@ -33,17 +35,17 @@ export const SyncBanner: React.FC<SyncBannerProps> = ({
       )}
       <span className="flex-1">
         {syncing
-          ? 'SYNCING WORKOUT…'
-          : syncPending && isOnline ? 'WORKOUT SAVED — SYNCING'
-          : syncPending ? 'OFFLINE — WORKOUT SAVED LOCALLY'
-          : 'OFFLINE'}
+          ? t('dashboard.sync.syncing')
+          : syncPending && isOnline ? t('dashboard.sync.saved')
+          : syncPending ? t('dashboard.sync.offline')
+          : t('dashboard.sync.offlineOnly')}
       </span>
       {syncPending && !syncing && isOnline && (
         <button
           onClick={onSync}
           className="bg-[rgba(255,255,255,0.22)] border-none rounded-[5px] text-white font-mono text-[9px] tracking-[0.06em] px-2.5 py-1 cursor-pointer flex-shrink-0 hover:bg-[rgba(255,255,255,0.3)] transition-colors"
         >
-          SYNC NOW
+          {t('dashboard.sync.syncNow')}
         </button>
       )}
     </Badge>

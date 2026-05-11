@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { plansApi, sessionsApi } from '../api/client';
 import { TrainingPlan, WorkoutSession } from '../types';
 import { fmtDuration } from '../lib/utils';
 
 function fmtDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 function avgMinutes(sessions: WorkoutSession[]): number | null {
@@ -17,6 +18,7 @@ function avgMinutes(sessions: WorkoutSession[]): number | null {
 export default function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate   = useNavigate();
+  const { t } = useTranslation();
 
   const [plan,     setPlan]     = useState<TrainingPlan | null>(null);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -39,7 +41,7 @@ export default function PlanDetailPage() {
     return (
       <div className="ft-loader">
         <div className="ft-loader-dot" />
-        <span className="mono-tag">Loading…</span>
+        <span className="mono-tag">{t('common.loading')}</span>
       </div>
     );
   }
@@ -50,9 +52,9 @@ export default function PlanDetailPage() {
   const orderedEx  = [...warmupEx, ...strengthEx];
 
   const stats = [
-    { label: 'Exercises', value: strengthEx.length.toString() },
-    { label: 'Avg time',  value: avgMins != null ? `${avgMins}` : '—', unit: avgMins != null ? 'min' : undefined },
-    { label: 'Sessions',  value: plan.session_count.toString() },
+    { label: t('plan.statExercises'), value: strengthEx.length.toString() },
+    { label: t('plan.statAvgTime'),   value: avgMins != null ? `${avgMins}` : '—', unit: avgMins != null ? t('common.min') : undefined },
+    { label: t('plan.statSessions'),  value: plan.session_count.toString() },
   ];
 
   return (
@@ -69,7 +71,7 @@ export default function PlanDetailPage() {
             <path d="M19 12H5M11 6l-6 6 6 6"/>
           </svg>
         </button>
-        <span className="mono-tag">PLAN {plan.plan_order}</span>
+        <span className="mono-tag">{t('plan.program').toUpperCase()} {plan.plan_order}</span>
         <button className="icon-btn" onClick={() => navigate(`/plan/${planId}/edit`)} aria-label="Edit plan">
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
@@ -85,7 +87,7 @@ export default function PlanDetailPage() {
           margin: '0 0 4px', fontFamily: 'var(--mono)', fontSize: 9,
           letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-4)',
         }}>
-          Program
+          {t('plan.program')}
         </p>
         <h1 style={{
           margin: 0, fontSize: 32, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.05,
@@ -144,13 +146,13 @@ export default function PlanDetailPage() {
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12,
         }}>
-          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>Exercises</h3>
-          <span className="mono-tag">In order</span>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>{t('plan.exercises')}</h3>
+          <span className="mono-tag">{t('plan.inOrder')}</span>
         </div>
         <div className="surface" style={{ overflow: 'hidden' }}>
           {orderedEx.length === 0 ? (
             <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-              <p className="mono-tag">No exercises — edit plan to add some</p>
+              <p className="mono-tag">{t('plan.noExercisesInPlan')}</p>
             </div>
           ) : orderedEx.map((ex, i) => {
             const isWarmup = ex.exercise_type === 'warmup';
@@ -192,7 +194,7 @@ export default function PlanDetailPage() {
                       marginTop: 3, fontFamily: 'var(--mono)', fontSize: 10,
                       color: 'oklch(0.60 0.16 55)',
                     }}>
-                      {ex.planned_duration_minutes ? `${ex.planned_duration_minutes} min warmup` : 'Warmup'}
+                      {ex.planned_duration_minutes ? t('plan.warmupDuration', { count: ex.planned_duration_minutes }) + ' warmup' : t('plan.warmup')}
                     </div>
                   ) : (
                     <div style={{
@@ -205,7 +207,7 @@ export default function PlanDetailPage() {
                     <div style={{
                       marginTop: 2, fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink-4)',
                     }}>
-                      {isWarmup ? ex.seat_position : `Seat ${ex.seat_position}`}
+                      {isWarmup ? ex.seat_position : t('workout.seatLabel', { value: ex.seat_position })}
                     </div>
                   )}
                   {ex.notes && (
@@ -228,9 +230,9 @@ export default function PlanDetailPage() {
         <div style={{ padding: '0 20px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>
-              Recent Runs
+              {t('plan.recentRuns')}
             </h3>
-            <span className="mono-tag">{sessions.length} last</span>
+            <span className="mono-tag">{t('plan.recentRunsCount', { count: sessions.length })}</span>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             {sessions.map((s) => (
@@ -247,7 +249,7 @@ export default function PlanDetailPage() {
                   {s.total_sets ?? 0}
                 </div>
                 <div className="mono-tag" style={{ marginTop: 2, textTransform: 'none', color: 'var(--ink-3)' }}>
-                  sets · {fmtDuration(s.duration_seconds)}
+                  {t('plan.runSetsMeta', { sets: s.total_sets ?? 0, duration: fmtDuration(s.duration_seconds) })}
                 </div>
               </button>
             ))}
@@ -272,11 +274,11 @@ export default function PlanDetailPage() {
             <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden>
               <path d="M7 4.5v15l13-7.5z"/>
             </svg>
-            Start Workout
+            {t('plan.startWorkout')}
           </span>
           {avgMins != null && (
             <span className="mono-tag" style={{ color: 'var(--lime-ink)', opacity: 0.65 }}>
-              EST {avgMins} MIN
+              {t('plan.estimatedMin', { count: avgMins })}
             </span>
           )}
         </button>

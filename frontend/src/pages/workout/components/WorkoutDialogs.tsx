@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Typography, Button, Sheet } from '../../../components/ui';
 
 interface WorkoutDialogsProps {
@@ -24,43 +25,36 @@ export const WorkoutDialogs: React.FC<WorkoutDialogsProps> = ({
   doneCount,
   totalSets,
 }) => {
+  const { t } = useTranslation();
   return (
     <>
       {/* Finish Workout Sheet */}
-      <Sheet
-        isOpen={showConfirm}
-        onClose={onConfirmClose}
-        title="Finish Workout?"
-      >
+      <Sheet isOpen={showConfirm} onClose={onConfirmClose} title={t('workout.finishTitle')}>
         <p className="m-0 text-[var(--ink-2)] text-sm leading-relaxed mb-6">
-          {doneCount}/{totalSets} sets completed.
-          {doneCount < totalSets ? ' Incomplete sets will be saved as empty.' : ' Amazing work!'}
+          {t('workout.finishBody', { done: doneCount, total: totalSets })}
+          {doneCount < totalSets ? t('workout.finishBodyIncomplete') : t('workout.finishBodyComplete')}
         </p>
         <div className="grid grid-cols-2 gap-2.5">
           <Button variant="ghost" onClick={onConfirmClose} className="h-12">
-            Keep Going
+            {t('workout.keepGoing')}
           </Button>
           <Button onClick={onConfirmSave} disabled={isCompleting} className="h-12 bg-[var(--ink)] text-[var(--paper)]">
-            {isCompleting ? 'Saving…' : 'Save & Finish'}
+            {isCompleting ? t('common.saving') : t('workout.saveFinishBtn')}
           </Button>
         </div>
       </Sheet>
 
       {/* Abandon Sheet */}
-      <Sheet
-        isOpen={showAbandon}
-        onClose={onAbandonClose}
-        title="Exit without saving?"
-      >
+      <Sheet isOpen={showAbandon} onClose={onAbandonClose} title={t('workout.exitTitle')}>
         <p className="m-0 text-[var(--ink-2)] text-sm leading-relaxed mb-6">
-          Your progress will be lost and this session won't be recorded.
+          {t('workout.exitBody')}
         </p>
         <div className="grid grid-cols-2 gap-2.5">
           <Button variant="ghost" onClick={onAbandonClose} className="h-12">
-            Keep Going
+            {t('workout.keepGoing')}
           </Button>
           <Button variant="danger" onClick={onAbandonExit} className="h-12 font-bold shadow-sm">
-            Exit
+            {t('workout.exit')}
           </Button>
         </div>
       </Sheet>

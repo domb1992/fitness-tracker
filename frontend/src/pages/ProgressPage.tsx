@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { sessionsApi, exercisesApi } from '../api/client';
 import { useUIStore } from '../store/store';
 import { Stats, MuscleVolume, LiftProgressionEntry, ExerciseStats } from '../types';
@@ -178,6 +179,7 @@ const LIFT_PAGE_SIZE = 6;
 
 export default function ProgressPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [stats,       setStats]       = useState<Stats | null>(null);
   const [sessions,    setSessions]    = useState<any[]>([]);
@@ -349,23 +351,23 @@ export default function ProgressPage() {
             margin: '0 0 3px', fontFamily: 'var(--mono)', fontSize: 9,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-4)',
           }}>
-            Analytics
+            {t('progress.pageLabel')}
           </p>
           <h1 style={{
             margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1,
             color: 'var(--ink)',
           }}>
-            Progress
+            {t('progress.heading')}
           </h1>
         </div>
         <button
           onClick={handleShare}
-          aria-label={copied ? 'Copied' : 'Share progress'}
+          aria-label={copied ? t('progress.copied') : t('progress.shareLabel')}
           className="icon-btn"
           style={{ color: copied ? 'var(--positive)' : undefined, marginTop: 4 }}
         >
           {copied ? (
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em' }}>COPIED</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em' }}>{t('progress.copied').toUpperCase()}</span>
           ) : (
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
               <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -379,21 +381,21 @@ export default function ProgressPage() {
       {/* Stat cards — total workouts + last 7 days */}
       <div style={{ padding: '16px 20px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <div className="surface" style={{ padding: '16px 16px 14px' }}>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>All Time</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>{t('progress.allTime')}</div>
           <div className="bignum" style={{ fontSize: 44, lineHeight: 1 }}>
             {stats?.totalWorkouts ?? 0}
           </div>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>workouts</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>{t('progress.workouts')}</div>
         </div>
         <div className="surface" style={{ padding: '16px 16px 14px' }}>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>Last 7 Days</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>{t('progress.lastSevenDays')}</div>
           <div className="bignum" style={{
             fontSize: 44, lineHeight: 1,
             color: (stats?.thisWeek ?? 0) > 0 ? 'var(--positive)' : undefined,
           }}>
             {stats?.thisWeek ?? 0}
           </div>
-          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>sessions</div>
+          <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-3)', marginTop: 6 }}>{t('common.sessions', { count: stats?.thisWeek ?? 0 })}</div>
         </div>
       </div>
 
@@ -405,7 +407,7 @@ export default function ProgressPage() {
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-              {isCurrent ? 'This Month' : 'Month'}
+              {isCurrent ? t('progress.thisMonth') : t('progress.month')}
             </h3>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
               style={{ transform: calOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
@@ -413,11 +415,11 @@ export default function ProgressPage() {
             </svg>
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button aria-label="Previous month" onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
+            <button aria-label={t('progress.prevMonth')} onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
               <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <span className="mono-tag" style={{ minWidth: 110, textAlign: 'center' }}>{monthName}</span>
-            <button aria-label="Next month" onClick={() => setMonthOffset((o) => Math.min(0, o + 1))} disabled={isCurrent} style={{ background: 'none', border: 'none', cursor: isCurrent ? 'default' : 'pointer', color: isCurrent ? 'var(--paper-3)' : 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
+            <button aria-label={t('progress.nextMonth')} onClick={() => setMonthOffset((o) => Math.min(0, o + 1))} disabled={isCurrent} style={{ background: 'none', border: 'none', cursor: isCurrent ? 'default' : 'pointer', color: isCurrent ? 'var(--paper-3)' : 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
               <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           </div>
@@ -456,14 +458,12 @@ export default function ProgressPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--hair)' }}>
             <div>
-              <span className="mono-tag">Workouts this month</span>
+              <span className="mono-tag">{t('progress.workoutsThisMonth')}</span>
               <span className="bignum" style={{ fontSize: 20, marginLeft: 8 }}>{daysWorkedOut}</span>
             </div>
             {isCurrent && streak > 0 && (
               <div style={{ textAlign: 'right' }}>
-                <span className="mono-tag">Streak </span>
-                <span className="bignum" style={{ fontSize: 20 }}>{streak}</span>
-                <span className="mono-tag"> days</span>
+                <span className="bignum" style={{ fontSize: 20 }}>{t('progress.streakDays', { count: streak })}</span>
               </div>
             )}
           </div>
@@ -479,7 +479,7 @@ export default function ProgressPage() {
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-            Volume by Muscle
+            {t('progress.volumeByMuscle')}
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>{monthName.split(' ')[0]}</span>
@@ -499,7 +499,7 @@ export default function ProgressPage() {
           ) : topMuscles.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
               <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
-                No strength data for {monthName.split(' ')[0]}
+                {t('progress.noStrengthData', { month: monthName.split(' ')[0] })}
               </span>
             </div>
           ) : (
@@ -513,7 +513,7 @@ export default function ProgressPage() {
         {topMuscles.length > 0 && (
           <div style={{ marginTop: 5, textAlign: 'right' }}>
             <span className="mono-tag" style={{ color: 'var(--ink-4)', fontSize: 9 }}>
-              weighted sets · primary ×1 · secondary ×0.5
+              {t('progress.volumeNote')}
             </span>
           </div>
         )}
@@ -525,15 +525,15 @@ export default function ProgressPage() {
       <div style={{ padding: '0 20px 24px' }}>
         <button onClick={() => setLiftOpen(!liftOpen)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-            Lift Progression
+            {t('progress.liftProgression')}
           </h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
               {liftLoading
                 ? '…'
                 : liftRpcReady
-                  ? `${filteredLifts.length} lifts`
-                  : `${fallbackLifts.length} lifts`}
+                  ? t('progress.liftsCount', { count: filteredLifts.length })
+                  : t('progress.liftsCount', { count: fallbackLifts.length })}
             </span>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
               style={{ transform: liftOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
@@ -552,7 +552,7 @@ export default function ProgressPage() {
         ) : liftRpcReady && filteredLifts.length === 0 ? (
           <div className="surface" style={{ padding: '24px 14px', textAlign: 'center' }}>
             <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
-              Complete workouts with weights to see progression
+              {t('progress.noProgressionData')}
             </span>
           </div>
 
@@ -591,7 +591,7 @@ export default function ProgressPage() {
                         {period && <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>{period}</span>}
                         <span className="mono-tag" style={{ color: 'var(--ink-3)', textTransform: 'none' }}>{fmtKg(e.last_weight)} kg</span>
                         {e.session_count > 1 && <span className="mono-tag" style={{ color: 'var(--ink-4)', textTransform: 'none' }}>{e.session_count}×</span>}
-                        {neutral && e.session_count === 1 && <span className="mono-tag" style={{ color: 'var(--ink-4)', textTransform: 'none' }}>1 session</span>}
+                        {neutral && e.session_count === 1 && <span className="mono-tag" style={{ color: 'var(--ink-4)', textTransform: 'none' }}>{t('progress.oneSession')}</span>}
                       </div>
                     </div>
                     <Sparkline points={Array.isArray(e.sparkline) ? e.sparkline.filter((v) => typeof v === 'number' && isFinite(v)) : []} />
@@ -604,7 +604,7 @@ export default function ProgressPage() {
             </div>
             {filteredLifts.length > LIFT_PAGE_SIZE && (
               <button onClick={() => setShowAllLifts((v) => !v)} style={{ width: '100%', marginTop: 8, height: 38, background: 'transparent', border: '1px dashed var(--border)', borderRadius: 'var(--r-2)', fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--ink-3)', cursor: 'pointer' }}>
-                {showAllLifts ? 'Show less' : `Show all ${filteredLifts.length} lifts`}
+                {showAllLifts ? t('progress.showLess') : t('progress.showAllLifts', { count: filteredLifts.length })}
               </button>
             )}
           </>
@@ -612,7 +612,7 @@ export default function ProgressPage() {
         ) : fallbackLifts.length === 0 ? (
           <div className="surface" style={{ padding: '24px 14px', textAlign: 'center' }}>
             <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
-              Complete workouts with weights to see progression
+              {t('progress.noProgressionData')}
             </span>
           </div>
 
@@ -667,7 +667,7 @@ export default function ProgressPage() {
       {/* Empty state */}
       {!stats?.totalWorkouts && (
         <div style={{ padding: '48px 20px', textAlign: 'center' }}>
-          <p className="mono-tag">No data yet — complete workouts to see progress here</p>
+          <p className="mono-tag">{t('progress.noData')}</p>
         </div>
       )}
     </div>

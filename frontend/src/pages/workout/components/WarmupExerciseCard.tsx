@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Typography, Card, Input } from '../../../components/ui';
 import { cn } from '../../../lib/utils';
 import { ActiveExercise } from '../../../types';
@@ -22,6 +23,7 @@ export const WarmupExerciseCard: React.FC<WarmupExerciseCardProps> = ({
   onUpdateSet,
   onSetDone,
 }) => {
+  const { t } = useTranslation();
   const { exercise, sets } = activeEx;
   const s = sets[0];
   const isActive = !s?.done;
@@ -48,7 +50,7 @@ export const WarmupExerciseCard: React.FC<WarmupExerciseCardProps> = ({
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
             <Typography variant="mono" className={isActive ? 'text-[rgba(255,255,255,0.75)]' : 'text-[var(--ink-3)]'}>
-              WARMUP
+              {t('workout.warmupLabel')}
             </Typography>
             {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white opacity-75 shadow-sm" />}
           </div>
@@ -57,7 +59,7 @@ export const WarmupExerciseCard: React.FC<WarmupExerciseCardProps> = ({
           </div>
           {exercise.seat_position && (
             <div className="mt-1 font-mono text-[9px] opacity-70 uppercase tracking-wider">
-              Setting: {exercise.seat_position}
+              {t('workout.warmupSetting', { value: exercise.seat_position })}
             </div>
           )}
           {exercise.notes && (
@@ -69,7 +71,7 @@ export const WarmupExerciseCard: React.FC<WarmupExerciseCardProps> = ({
         {exercise.planned_duration_minutes ? (
           <div className="text-right">
             <Typography variant="mono" className={isActive ? 'text-[rgba(255,255,255,0.6)]' : 'text-[var(--ink-3)]'}>
-              Target
+              {t('workout.target')}
             </Typography>
             <Typography variant="bignum" className="text-sm mt-0.5 block">
               {exercise.planned_duration_minutes} min
@@ -80,8 +82,8 @@ export const WarmupExerciseCard: React.FC<WarmupExerciseCardProps> = ({
 
       {/* Input row */}
       <div className="grid grid-cols-[1fr_1fr_60px] p-[8px_14px_5px_16px] border-b border-[var(--hair)]">
-        <Typography variant="mono" className="text-center text-[9px]">BPM</Typography>
-        <Typography variant="mono" className="text-center text-[9px]">MIN</Typography>
+        <Typography variant="mono" className="text-center text-[9px]">{t('workout.bpm')}</Typography>
+        <Typography variant="mono" className="text-center text-[9px]">{t('workout.minLabel')}</Typography>
         <span />
       </div>
       <div className={cn(

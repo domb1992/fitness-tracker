@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
 import { User, TrainingPlan, ActiveExercise } from '../types';
+import { setLocale, type SupportedLocale } from '../i18n';
 
 // ─── Theme Store ──────────────────────────────────────────────────────────────
 
@@ -54,10 +55,12 @@ interface UIState {
   progressVolOpen:  boolean;
   progressLiftOpen: boolean;
   dashRecentOpen:   boolean;
+  locale:           SupportedLocale;
   setProgressCalOpen:  (v: boolean) => void;
   setProgressVolOpen:  (v: boolean) => void;
   setProgressLiftOpen: (v: boolean) => void;
   setDashRecentOpen:   (v: boolean) => void;
+  setLocalePreference: (locale: SupportedLocale) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -67,10 +70,12 @@ export const useUIStore = create<UIState>()(
       progressVolOpen:  true,
       progressLiftOpen: true,
       dashRecentOpen:   true,
+      locale:           'en',
       setProgressCalOpen:  (v) => set({ progressCalOpen:  v }),
       setProgressVolOpen:  (v) => set({ progressVolOpen:  v }),
       setProgressLiftOpen: (v) => set({ progressLiftOpen: v }),
       setDashRecentOpen:   (v) => set({ dashRecentOpen:   v }),
+      setLocalePreference: (locale) => { setLocale(locale); set({ locale }); },
     }),
     { name: 'fittrack-ui' }
   )

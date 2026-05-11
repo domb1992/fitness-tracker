@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Exercise } from '../../../types';
 import { getExerciseGuide, resolveExerciseMuscles } from '../../../lib/exerciseGuide';
 import { MuscleMap } from './MuscleMap';
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [contentH, setContentH] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -72,7 +74,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
             letterSpacing: '-0.01em',
             color: 'var(--ink-2)',
           }}>
-            Form Guide
+            {t('workout.formGuide')}
           </span>
           {hasMuscles && (
             <span style={{
@@ -85,7 +87,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
               padding: '2px 6px',
               borderRadius: 4,
             }}>
-              Muscles
+              {t('workout.muscles')}
             </span>
           )}
         </div>
@@ -149,7 +151,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
                   display: 'block',
                   marginBottom: 4,
                 }}>
-                  Key Tip
+                  {t('workout.keyTip')}
                 </span>
                 <p style={{
                   margin: 0,
@@ -171,7 +173,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
                       <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                     </svg>
                   }>
-                    Form Cues
+                    {t('workout.formCues')}
                   </SectionLabel>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                     {guide!.cues.map((cue, i) => (
@@ -217,7 +219,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
                       <line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
                   }>
-                    Common Mistakes
+                    {t('workout.commonMistakes')}
                   </SectionLabel>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 8 }}>
                     {guide!.mistakes.map((mistake, i) => (
@@ -272,7 +274,7 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
                     display: 'block',
                     marginBottom: 2,
                   }}>
-                    Breathing
+                    {t('workout.breathing')}
                   </span>
                   <span style={{
                     fontFamily: 'var(--sans)',

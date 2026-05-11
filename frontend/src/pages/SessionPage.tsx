@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { sessionsApi } from '../api/client';
 
 function fmtDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en', {
+  return new Date(dateStr).toLocaleDateString(undefined, {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   });
 }
@@ -18,6 +19,7 @@ function fmtDuration(s: number | null) {
 export default function SessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [session,     setSession]     = useState<any>(null);
   const [loading,     setLoading]     = useState(true);
@@ -118,7 +120,7 @@ export default function SessionPage() {
         const log = exLogs[0];
         const bpm = logs[log?.id]?.weight || (log?.weight_kg != null ? String(log.weight_kg) : null);
         const min = logs[log?.id]?.reps   || (log?.reps_completed != null ? String(log.reps_completed) : null);
-        const parts = [min ? `${min} min` : null, bpm ? `${bpm} bpm` : null].filter(Boolean);
+        const parts = [min ? `${min} min` : null, bpm ? `${bpm} bpm` : null].filter(Boolean); // share text intentionally in neutral format
         lines.push(`  ${parts.length > 0 ? parts.join(' · ') : '—'}`);
       } else {
         for (const log of exLogs) {
@@ -142,7 +144,7 @@ export default function SessionPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="mono-tag">Loading…</span>
+        <span className="mono-tag">{t('common.loading')}</span>
       </div>
     );
   }
@@ -172,12 +174,12 @@ export default function SessionPage() {
             <path d="M19 12H5M11 6l-6 6 6 6"/>
           </svg>
         </button>
-        <div className="mono-tag">Workout</div>
+        <div className="mono-tag">{t('session.pageLabel')}</div>
         <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
           <button onClick={handleShare}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? 'oklch(0.5 0.18 145)' : 'var(--ink-3)', padding: 4 }}>
             {copied ? (
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em' }}>COPIED</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em' }}>{t('session.copied')}</span>
             ) : (
               <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -216,7 +218,7 @@ export default function SessionPage() {
         <div>
           {editMode ? (
             <>
-              <label className="ft-label">Date</label>
+              <label className="ft-label">{t('session.date')}</label>
               <input
                 type="date"
                 value={dateValue}
@@ -269,20 +271,20 @@ export default function SessionPage() {
                       </div>
                     )}
                   </div>
-                  <div className="mono-tag" style={{ color: 'var(--ink-3)' }}>WARMUP</div>
+                  <div className="mono-tag" style={{ color: 'var(--ink-3)' }}>{t('session.warmup')}</div>
                 </div>
                 <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 16, minHeight: 52 }}>
                   {editMode && log ? (
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-                        <span className="mono-tag">BPM</span>
+                        <span className="mono-tag">{t('session.bpm')}</span>
                         <input type="number" inputMode="numeric" value={logs[log.id]?.weight ?? ''}
                           onChange={(e) => updateLog(log.id, 'weight', e.target.value)}
                           placeholder="—" className={cellInputClass}
                         />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-                        <span className="mono-tag">MIN</span>
+                        <span className="mono-tag">{t('session.min')}</span>
                         <input type="number" inputMode="decimal" value={logs[log.id]?.reps ?? ''}
                           onChange={(e) => updateLog(log.id, 'reps', e.target.value)}
                           placeholder="—" step="0.5" className={cellInputClass}
@@ -299,7 +301,7 @@ export default function SessionPage() {
                       {bpm && (
                         <>
                           <span className="bignum" style={{ fontSize: 22 }}>{bpm}</span>
-                          <span className="mono-tag">bpm</span>
+                          <span className="mono-tag">{t('session.bpm').toLowerCase()}</span>
                         </>
                       )}
                       {!min && !bpm && <span className="mono-tag">—</span>}
@@ -327,9 +329,9 @@ export default function SessionPage() {
                 )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', padding: '7px 16px 5px', borderBottom: '1px solid var(--border)' }}>
-                <span className="mono-tag">SET</span>
-                <span className="mono-tag" style={{ textAlign: 'center' }}>KG</span>
-                <span className="mono-tag" style={{ textAlign: 'center' }}>REPS</span>
+                <span className="mono-tag">{t('session.set')}</span>
+                <span className="mono-tag" style={{ textAlign: 'center' }}>{t('session.kg')}</span>
+                <span className="mono-tag" style={{ textAlign: 'center' }}>{t('session.reps')}</span>
               </div>
               {exLogs.map((log: any, i: number) => (
                 <div key={log.id} style={{
@@ -389,7 +391,7 @@ export default function SessionPage() {
           background: 'linear-gradient(to top, var(--paper) 60%, transparent)',
         }}>
           <button className="block-btn" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? t('session.saving') : t('session.saveChanges')}
           </button>
         </div>
       )}
@@ -402,22 +404,22 @@ export default function SessionPage() {
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 16,
         }}>
           <div className="surface" style={{ width: '100%', maxWidth: 390, padding: 24 }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em' }}>Delete workout?</h2>
+            <h2 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em' }}>{t('session.deleteTitle')}</h2>
             <p style={{ margin: '0 0 24px', fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.5 }}>
-              This workout will be permanently removed and won't count toward your stats.
+              {t('session.deleteMessage')}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setShowDelete(false)} style={{
                 flex: 1, height: 48, background: 'transparent', color: 'var(--ink)',
                 border: '1px solid var(--hair)', borderRadius: 8,
                 fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
-              }}>Cancel</button>
+              }}>{t('common.cancel')}</button>
               <button onClick={handleDelete} disabled={deleting} style={{
                 flex: 1, height: 48, background: 'oklch(0.55 0.22 25)', color: 'white',
                 border: 0, borderRadius: 8,
                 fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 opacity: deleting ? 0.5 : 1,
-              }}>{deleting ? 'Deleting…' : 'Delete'}</button>
+              }}>{deleting ? t('common.deleting') : t('common.delete')}</button>
             </div>
           </div>
         </div>

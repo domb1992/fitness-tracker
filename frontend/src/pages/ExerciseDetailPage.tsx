@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { exercisesApi } from '../api/client';
 import { ExerciseHistory, ExerciseSession } from '../types';
 
 function fmtDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function fmtShort(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en', { month: 'numeric', day: 'numeric' });
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
 }
 
 export default function ExerciseDetailPage() {
   const { exerciseId } = useParams<{ exerciseId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [data,    setData]    = useState<ExerciseHistory | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +29,7 @@ export default function ExerciseDetailPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="mono-tag">Loading…</span>
+        <span className="mono-tag">{t('common.loading')}</span>
       </div>
     );
   }
@@ -54,7 +56,7 @@ export default function ExerciseDetailPage() {
             <path d="M19 12H5M11 6l-6 6 6 6"/>
           </svg>
         </button>
-        <div className="mono-tag">Exercise</div>
+        <div className="mono-tag">{t('exercise.pageLabel')}</div>
         <div style={{ width: 32 }} />
       </div>
 
@@ -68,7 +70,7 @@ export default function ExerciseDetailPage() {
 
       {sessions.length === 0 ? (
         <div style={{ padding: '48px 20px', textAlign: 'center' }}>
-          <p className="mono-tag">No data yet — complete a workout to see progress</p>
+          <p className="mono-tag">{t('exercise.noData')}</p>
         </div>
       ) : (
         <>
@@ -76,9 +78,9 @@ export default function ExerciseDetailPage() {
           <div style={{ padding: '0 20px 20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {[
-                { label: 'Start', value: startW != null ? `${startW} kg` : '—' },
-                { label: 'Now',   value: lastW  != null ? `${lastW} kg`  : '—' },
-                { label: 'Total', value: `${sessions.length} sessions` },
+                { label: t('exercise.start'), value: startW != null ? `${startW} ${t('common.kg')}` : '—' },
+                { label: t('exercise.now'),   value: lastW  != null ? `${lastW} ${t('common.kg')}`  : '—' },
+                { label: t('exercise.total'), value: t('exercise.sessionCount', { count: sessions.length }) },
               ].map(({ label, value }) => (
                 <div key={label} className="surface" style={{ padding: '12px 14px' }}>
                   <div className="mono-tag" style={{ marginBottom: 4 }}>{label}</div>
@@ -96,9 +98,9 @@ export default function ExerciseDetailPage() {
                     padding: '3px 10px', borderRadius: 4,
                     fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700,
                   }}>
-                    {diff >= 0 ? '↑' : '↓'} {diff >= 0 ? '+' : ''}{diff.toFixed(1)} kg progress
+                    {diff >= 0 ? '↑' : '↓'} {diff >= 0 ? '+' : ''}{t('exercise.kgProgress', { diff: `${diff.toFixed(1)}` })}
                   </span>
-                  <span className="mono-tag" style={{ textTransform: 'none' }}>since first session</span>
+                  <span className="mono-tag" style={{ textTransform: 'none' }}>{t('exercise.sinceFirst')}</span>
                 </div>
               </div>
             )}
@@ -108,8 +110,8 @@ export default function ExerciseDetailPage() {
           {sessions.some((s) => s.best_weight != null) && (
             <div style={{ padding: '0 20px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span className="mono-tag">Weight progression</span>
-                <span className="mono-tag">{sessions.length} sessions</span>
+                <span className="mono-tag">{t('exercise.weightProgression')}</span>
+                <span className="mono-tag">{t('exercise.sessionCount', { count: sessions.length })}</span>
               </div>
               <div className="surface" style={{ padding: '16px 14px 10px' }}>
                 <div style={{
@@ -150,7 +152,7 @@ export default function ExerciseDetailPage() {
           {/* Session history */}
           <div style={{ padding: '0 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span className="mono-tag">Session history</span>
+              <span className="mono-tag">{t('exercise.sessionHistory')}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[...sessions].reverse().map((s) => (
@@ -166,18 +168,18 @@ export default function ExerciseDetailPage() {
                       {s.best_weight != null ? (
                         <>
                           <span className="bignum" style={{ fontSize: 18 }}>{s.best_weight}</span>
-                          <span className="mono-tag" style={{ marginLeft: 2 }}>kg best</span>
+                          <span className="mono-tag" style={{ marginLeft: 2 }}>{t('common.kg')} best</span>
                         </>
                       ) : (
-                        <span className="mono-tag">No weight</span>
+                        <span className="mono-tag">{t('exercise.noWeight')}</span>
                       )}
                     </div>
                   </div>
                   {/* Column headers */}
                   <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr 1fr', padding: '6px 16px 4px', borderBottom: '1px solid var(--hair)' }}>
-                    <span className="mono-tag">SET</span>
-                    <span className="mono-tag" style={{ textAlign: 'center' }}>KG</span>
-                    <span className="mono-tag" style={{ textAlign: 'center' }}>REPS</span>
+                    <span className="mono-tag">{t('exercise.set')}</span>
+                    <span className="mono-tag" style={{ textAlign: 'center' }}>{t('exercise.kg')}</span>
+                    <span className="mono-tag" style={{ textAlign: 'center' }}>{t('exercise.reps')}</span>
                   </div>
                   {/* Sets */}
                   {s.sets.map((set, si) => (

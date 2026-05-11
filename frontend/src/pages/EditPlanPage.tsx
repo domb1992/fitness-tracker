@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { plansApi } from '../api/client';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { recognizeExercise, MUSCLE_REGIONS } from '../lib/exerciseDatabase';
@@ -88,6 +89,7 @@ interface MusclePickerProps {
 }
 
 function MusclePicker({ primary, secondary, onChange }: MusclePickerProps) {
+  const { t } = useTranslation();
   // Deduplicate Rear Delts which appears in both Back and Shoulders regions
   const seen = new Set<string>();
   const regions = MUSCLE_REGIONS.map((r) => ({
@@ -103,22 +105,22 @@ function MusclePicker({ primary, secondary, onChange }: MusclePickerProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 6 }}>
       {/* Legend */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <span className="mono-tag" style={{ fontSize: 9 }}>TAP TO CYCLE:</span>
+        <span className="mono-tag" style={{ fontSize: 9 }}>{t('plan.tapToCycle')}</span>
         <span style={{
           fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.04em',
           background: 'var(--ink)', color: 'var(--paper)',
           padding: '2px 7px', borderRadius: 4,
-        }}>PRIMARY</span>
+        }}>{t('plan.primary')}</span>
         <span style={{
           fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.04em',
           background: 'var(--paper-3)', color: 'var(--ink-2)',
           border: '1px solid var(--border)', padding: '2px 7px', borderRadius: 4,
-        }}>SECONDARY</span>
+        }}>{t('plan.secondary')}</span>
         <span style={{
           fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.04em',
           color: 'var(--ink-4)', padding: '2px 7px', borderRadius: 4,
           border: '1px solid var(--hair)',
-        }}>none</span>
+        }}>{t('plan.none')}</span>
       </div>
 
       {regions.map((region) => (
@@ -172,7 +174,7 @@ function MusclePicker({ primary, secondary, onChange }: MusclePickerProps) {
             color: 'var(--ink-3)',
           }}
         >
-          Clear all
+          {t('plan.clearAll')}
         </button>
       )}
     </div>
@@ -252,6 +254,7 @@ function applyDetection(row: ExRow, name: string): Partial<ExRow> {
 export default function EditPlanPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate   = useNavigate();
+  const { t } = useTranslation();
 
   const [loading,           setLoading]           = useState(true);
   const [saving,            setSaving]            = useState(false);
@@ -306,7 +309,7 @@ export default function EditPlanPage() {
   function mark() { setDirty(true); }
 
   function goBack() {
-    if (dirty && !window.confirm('You have unsaved changes. Leave anyway?')) return;
+    if (dirty && !window.confirm(t('plan.unsavedChanges'))) return;
     navigate('/dashboard');
   }
 
@@ -437,7 +440,7 @@ export default function EditPlanPage() {
   }
 
   async function handleSave() {
-    if (!planName.trim()) { setError('Plan name is required'); return; }
+    if (!planName.trim()) { setError(t('plan.planNameRequiredShort')); return; }
     setSaving(true); setError('');
     try {
       await plansApi.update(planId!, { name: planName.trim(), description: planDesc, color: planColor });
@@ -491,7 +494,7 @@ export default function EditPlanPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100dvh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="mono-tag">Loading…</span>
+        <span className="mono-tag">{t('common.loading')}</span>
       </div>
     );
   }
@@ -518,7 +521,7 @@ export default function EditPlanPage() {
             <path d="M19 12H5M11 6l-6 6 6 6"/>
           </svg>
         </button>
-        <div className="mono-tag">Edit Plan</div>
+        <div className="mono-tag">{t('plan.editPlan')}</div>
         <button
           onClick={handleSave}
           disabled={saving || !dirty}
@@ -531,7 +534,7 @@ export default function EditPlanPage() {
             cursor: dirty ? 'pointer' : 'default', opacity: saving ? 0.5 : 1,
           }}
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('plan.saving') : t('plan.save')}
         </button>
       </div>
 
@@ -539,24 +542,24 @@ export default function EditPlanPage() {
 
         {/* Plan Details */}
         <div className="surface" style={{ padding: '16px 16px' }}>
-          <div className="mono-tag" style={{ marginBottom: 14 }}>Plan Details</div>
+          <div className="mono-tag" style={{ marginBottom: 14 }}>{t('plan.details')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
-              <label className="ft-label">Plan Name</label>
+              <label className="ft-label">{t('plan.planName')}</label>
               <input type="text" value={planName} style={inputStyle}
                 onChange={(e) => { setPlanName(e.target.value); mark(); }}
-                placeholder="e.g. Push Day"
+                placeholder={t('plan.planNamePlaceholder')}
               />
             </div>
             <div>
-              <label className="ft-label">Description (optional)</label>
+              <label className="ft-label">{t('plan.description')}</label>
               <input type="text" value={planDesc} style={inputStyle}
                 onChange={(e) => { setPlanDesc(e.target.value); mark(); }}
-                placeholder="e.g. Chest, Shoulders, Triceps"
+                placeholder={t('plan.descriptionPlaceholder')}
               />
             </div>
             <div>
-              <label className="ft-label">Color</label>
+              <label className="ft-label">{t('plan.color')}</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
                 {PLAN_COLORS.map((c) => (
                   <button key={c.value} type="button"
@@ -581,9 +584,9 @@ export default function EditPlanPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <TimerIcon />
-              <span className="mono-tag">Warmup</span>
+              <span className="mono-tag">{t('plan.warmup')}</span>
             </div>
-            <span className="mono-tag">{warmups.length} exercise{warmups.length !== 1 ? 's' : ''}</span>
+            <span className="mono-tag">{t('plan.warmupExercisesCount', { count: warmups.length })}</span>
           </div>
 
           {warmups.length > 0 && (
@@ -601,7 +604,7 @@ export default function EditPlanPage() {
                         <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
                       </button>
                     </div>
-                    <input type="text" value={wu.name} placeholder="e.g. Treadmill, Rowing"
+                    <input type="text" value={wu.name} placeholder={t('plan.warmupPlaceholder')}
                       onChange={(e) => updateWarmup(idx, 'name', e.target.value)}
                       style={{ ...inputStyle, flex: 1, fontSize: 13 }}
                     />
@@ -611,10 +614,10 @@ export default function EditPlanPage() {
                     </button>
                   </div>
                   <div style={{ paddingLeft: 28 }}>
-                    <label className="ft-label">Planned Duration <span style={{ fontFamily: 'var(--mono)', fontSize: 9, opacity: 0.5 }}>(minutes)</span></label>
+                    <label className="ft-label">{t('plan.plannedDuration')}</label>
                     <input type="number" inputMode="numeric" value={wu.planned_duration_minutes} min={1} max={120}
                       onChange={(e) => updateWarmup(idx, 'planned_duration_minutes', e.target.value)}
-                      placeholder="10"
+                      placeholder={t('plan.warmupDurationPlaceholder')}
                       style={{ ...inputStyle, textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 13, maxWidth: 120 }}
                     />
                   </div>
@@ -627,7 +630,7 @@ export default function EditPlanPage() {
                         style={{ transform: wu.expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>
                         <path d="M6 9l6 6 6-6"/>
                       </svg>
-                      {wu.expanded ? 'Hide optional fields' : 'Seat position & notes'}
+                      {wu.expanded ? t('plan.hideOptional') : t('plan.seatAndNotes')}
                       {(wu.seat_position || wu.notes) && !wu.expanded && (
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--lime)', display: 'inline-block' }} />
                       )}
@@ -635,18 +638,18 @@ export default function EditPlanPage() {
                     {wu.expanded && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
                         <div>
-                          <label className="ft-label">Seat / Machine Setting <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                          <label className="ft-label">{t('plan.seatPositionWarmup')}</label>
                           <input type="text" value={wu.seat_position}
                             onChange={(e) => updateWarmup(idx, 'seat_position', e.target.value)}
-                            placeholder="e.g. Level 5, incline 3%"
+                            placeholder={t('plan.seatPlaceholderWarmup')}
                             style={{ ...inputStyle, fontSize: 13 }}
                           />
                         </div>
                         <div>
-                          <label className="ft-label">Notes <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                          <label className="ft-label">{t('plan.notesWarmup')}</label>
                           <input type="text" value={wu.notes}
                             onChange={(e) => updateWarmup(idx, 'notes', e.target.value)}
-                            placeholder="e.g. Keep pace easy, heart rate zone 2"
+                            placeholder={t('plan.notesPlaceholderWarmup')}
                             style={{ ...inputStyle, fontSize: 13 }}
                           />
                         </div>
@@ -666,15 +669,15 @@ export default function EditPlanPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
             <TimerIcon />
-            Add Warmup Exercise
+            {t('plan.addWarmupExercise')}
           </button>
         </div>
 
         {/* ── Strength Exercises ── */}
         <div className="surface" style={{ padding: '16px 16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <span className="mono-tag">Exercises</span>
-            <span className="mono-tag">{exercises.length} total</span>
+            <span className="mono-tag">{t('plan.exercises')}</span>
+            <span className="mono-tag">{t('plan.totalExercisesCount', { count: exercises.length })}</span>
           </div>
 
           {exercises.length > 0 && (
@@ -694,7 +697,7 @@ export default function EditPlanPage() {
                         <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M6 9l6 6 6-6"/></svg>
                       </button>
                     </div>
-                    <input type="text" value={ex.name} placeholder="Exercise name"
+                    <input type="text" value={ex.name} placeholder={t('plan.exercisePlaceholder')}
                       onChange={(e) => updateEx(idx, 'name', e.target.value)}
                       style={{ ...inputStyle, flex: 1, fontSize: 13 }}
                     />
@@ -707,14 +710,14 @@ export default function EditPlanPage() {
                   {/* Sets / Reps */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, paddingLeft: 28 }}>
                     <div>
-                      <label className="ft-label">Sets</label>
+                      <label className="ft-label">{t('plan.sets')}</label>
                       <input type="number" value={ex.sets} min={1} max={10}
                         onChange={(e) => updateEx(idx, 'sets', e.target.value)}
                         style={{ ...inputStyle, textAlign: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}
                       />
                     </div>
                     <div>
-                      <label className="ft-label">Target Reps</label>
+                      <label className="ft-label">{t('plan.targetReps')}</label>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <input
                           type="text" value={ex.target_reps}
@@ -751,7 +754,7 @@ export default function EditPlanPage() {
                         confidence={ex.muscle_confidence}
                       />
                       {ex.primary_muscles.length === 0 && ex.secondary_muscles.length === 0 && ex.name.trim().length > 0 && (
-                        <span className="mono-tag" style={{ color: 'var(--ink-4)', fontSize: 9 }}>No muscles detected</span>
+                        <span className="mono-tag" style={{ color: 'var(--ink-4)', fontSize: 9 }}>{t('plan.noMusclesDetected')}</span>
                       )}
                     </div>
 
@@ -771,7 +774,7 @@ export default function EditPlanPage() {
                           style={{ transform: ex.muscles_expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>
                           <path d="M6 9l6 6 6-6"/>
                         </svg>
-                        {ex.muscles_expanded ? 'Hide muscles' : 'Edit muscles'}
+                        {ex.muscles_expanded ? t('plan.hideMuscles') : t('plan.editMuscles')}
                       </button>
 
                       {ex.muscle_source !== 'none' && (
@@ -786,7 +789,7 @@ export default function EditPlanPage() {
                           }}
                         >
                           <SparkleIcon />
-                          Re-detect
+                          {t('plan.redetect')}
                         </button>
                       )}
                     </div>
@@ -817,7 +820,7 @@ export default function EditPlanPage() {
                         style={{ transform: ex.expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>
                         <path d="M6 9l6 6 6-6"/>
                       </svg>
-                      {ex.expanded ? 'Hide optional fields' : 'Seat position & notes'}
+                      {ex.expanded ? t('plan.hideOptional') : t('plan.seatAndNotes')}
                       {(ex.seat_position || ex.notes) && !ex.expanded && (
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--lime)', display: 'inline-block' }} />
                       )}
@@ -826,18 +829,18 @@ export default function EditPlanPage() {
                     {ex.expanded && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
                         <div>
-                          <label className="ft-label">Seat Position <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                          <label className="ft-label">{t('plan.seatPosition')}</label>
                           <input type="text" value={ex.seat_position}
                             onChange={(e) => { updateEx(idx, 'seat_position', e.target.value); mark(); }}
-                            placeholder="e.g. Seat 4, back pad 2"
+                            placeholder={t('plan.seatPlaceholder')}
                             style={{ ...inputStyle, fontSize: 13 }}
                           />
                         </div>
                         <div>
-                          <label className="ft-label">Notes <span style={{ opacity: 0.5 }}>(optional)</span></label>
+                          <label className="ft-label">{t('plan.notesExercise')}</label>
                           <input type="text" value={ex.notes}
                             onChange={(e) => { updateEx(idx, 'notes', e.target.value); mark(); }}
-                            placeholder="e.g. Full range of motion, slow eccentric"
+                            placeholder={t('plan.notesPlaceholder')}
                             style={{ ...inputStyle, fontSize: 13 }}
                           />
                         </div>
@@ -850,7 +853,7 @@ export default function EditPlanPage() {
           )}
 
           {exercises.length === 0 && (
-            <p className="mono-tag" style={{ textAlign: 'center', padding: '16px 0 12px' }}>No exercises yet</p>
+            <p className="mono-tag" style={{ textAlign: 'center', padding: '16px 0 12px' }}>{t('plan.noExercisesYet')}</p>
           )}
 
           <button onClick={addRow}
@@ -861,7 +864,7 @@ export default function EditPlanPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 5v14M5 12h14"/></svg>
-            Add Exercise
+            {t('plan.addExercise')}
           </button>
         </div>
 
@@ -873,7 +876,7 @@ export default function EditPlanPage() {
 
         {/* Danger zone */}
         <div className="surface" style={{ padding: '16px' }}>
-          <div className="mono-tag" style={{ marginBottom: 12 }}>Danger Zone</div>
+          <div className="mono-tag" style={{ marginBottom: 12 }}>{t('plan.dangerZone')}</div>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             style={{
@@ -887,17 +890,17 @@ export default function EditPlanPage() {
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
             </svg>
-            Delete This Plan
+            {t('plan.deleteThisPlan')}
           </button>
         </div>
       </div>
 
       {showDeleteConfirm && (
         <ConfirmDialog
-          title="Delete plan?"
-          message="This plan and all its exercises will be permanently removed. Past workout sessions are kept."
-          confirmLabel={deletingPlan ? 'Deleting…' : 'Delete Plan'}
-          cancelLabel="Cancel"
+          title={t('plan.deletePlanTitle')}
+          message={t('plan.deletePlanMessage')}
+          confirmLabel={deletingPlan ? t('common.deleting') : t('plan.deletePlan')}
+          cancelLabel={t('common.cancel')}
           dangerous
           onConfirm={handleDeletePlan}
           onCancel={() => setShowDeleteConfirm(false)}
@@ -911,7 +914,7 @@ export default function EditPlanPage() {
         background: 'linear-gradient(to top, var(--paper) 60%, transparent)',
       }}>
         <button className="block-btn lime" onClick={handleSave} disabled={saving || !dirty}>
-          {saving ? 'Saving…' : 'Save Changes'}
+          {saving ? t('plan.saving') : t('plan.saveChanges')}
         </button>
       </div>
     </div>

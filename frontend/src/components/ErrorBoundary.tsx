@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import i18n from '../i18n';
 
 interface Props { children: ReactNode; }
 interface State { error: Error | null; }
@@ -23,7 +24,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           alignItems: 'center', justifyContent: 'center',
           padding: 24, textAlign: 'center',
         }}>
-          <div className="mono-tag" style={{ marginBottom: 12 }}>Something went wrong</div>
+          <div className="mono-tag" style={{ marginBottom: 12 }}>{i18n.t('errors.somethingWrong')}</div>
           <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--ink)' }}>
             {this.state.error.message || 'Unknown error'}
           </p>
@@ -35,7 +36,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             className="block-btn"
             style={{ width: 'auto', padding: '0 24px', height: 44, fontSize: 14 }}
           >
-            Back to Dashboard
+            {i18n.t('errors.backToDashboard')}
           </button>
         </div>
       );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { Input, Badge } from '../components/ui';
 import { ApexMark } from '../components/ApexMark';
@@ -7,6 +8,7 @@ import { ApexMark } from '../components/ApexMark';
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [mode,     setMode]     = useState<'login' | 'signup'>('login');
   const [name,     setName]     = useState('');
@@ -37,7 +39,7 @@ export default function AuthPage() {
           options: { data: { name }, emailRedirectTo: window.location.origin + '/auth' },
         });
         if (error) throw error;
-        setMessage('Check your email to confirm your account.');
+        setMessage(t('auth.checkEmail'));
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -47,14 +49,14 @@ export default function AuthPage() {
   }
 
   async function handleForgotPassword() {
-    if (!email) { setError('Enter your email first'); return; }
+    if (!email) { setError(t('auth.enterEmailFirst')); return; }
     setLoading(true); setError('');
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin + '/update-password',
     });
     setLoading(false);
     if (error) setError(error.message);
-    else setMessage('Reset link sent to your email.');
+    else setMessage(t('auth.resetSent'));
   }
 
   return (
@@ -93,7 +95,7 @@ export default function AuthPage() {
           letterSpacing: '0.16em', textTransform: 'uppercase',
           color: 'rgba(242,239,232,0.35)',
         }}>
-          ▲ Outlift Yesterday
+          {t('auth.tagline')}
         </p>
       </div>
 
@@ -113,7 +115,7 @@ export default function AuthPage() {
                   : 'bg-transparent text-[var(--ink-4)]',
               ].join(' ')}
             >
-              {m === 'login' ? 'Log In' : 'Sign Up'}
+              {m === 'login' ? t('auth.login') : t('auth.signup')}
             </button>
           ))}
         </div>
@@ -121,29 +123,29 @@ export default function AuthPage() {
         <form onSubmit={handleAuth} className="flex flex-col gap-5">
           {mode === 'signup' && (
             <Input
-              label="Full Name"
+              label={t('auth.fullName')}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder={t('auth.namePlaceholder')}
               required
             />
           )}
           <Input
-            label="Email Address"
+            label={t('auth.email')}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder={t('auth.emailPlaceholder')}
             required
             autoFocus
           />
           <Input
-            label="Password"
+            label={t('auth.password')}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             required
             minLength={6}
           />
@@ -165,7 +167,7 @@ export default function AuthPage() {
             className="block-btn lime mt-2"
             style={{ height: 52, fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em' }}
           >
-            <span>{loading ? 'Please wait…' : mode === 'login' ? 'Continue' : 'Create Account'}</span>
+            <span>{loading ? t('auth.pleaseWait') : mode === 'login' ? t('auth.continue') : t('auth.createAccount')}</span>
             {!loading && (
               <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -181,7 +183,7 @@ export default function AuthPage() {
             disabled={loading}
             className="w-full mt-5 bg-transparent border-none cursor-pointer font-mono text-[9px] font-bold tracking-widest uppercase text-[var(--ink-4)] hover:text-[var(--ink-2)] transition-colors"
           >
-            Forgot password?
+            {t('auth.forgotPassword')}
           </button>
         )}
       </div>

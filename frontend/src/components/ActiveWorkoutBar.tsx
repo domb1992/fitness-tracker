@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useWorkoutStore } from '../store/store';
 import { useWorkoutClock } from '../hooks/useWorkoutClock';
 
@@ -7,6 +8,7 @@ export default function ActiveWorkoutBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const clock    = useWorkoutClock(startedAt);
+  const { t } = useTranslation();
 
   const doneCount = exercises.reduce((a, ex) => a + (ex.sets?.filter((s) => s.done).length ?? 0), 0);
   const totalSets = exercises.reduce((a, ex) => a + (ex.sets?.length ?? 0), 0);
@@ -45,7 +47,7 @@ export default function ActiveWorkoutBar() {
             <div className="mono-tag" style={{
               color: 'oklch(0.95 0.006 75 / 0.45)', marginTop: 2, textTransform: 'none',
             }}>
-              {doneCount}/{totalSets} sets · tap to resume
+              {t('dashboard.activeBar.setsMeta', { done: doneCount, total: totalSets })}
             </div>
           </div>
         </div>

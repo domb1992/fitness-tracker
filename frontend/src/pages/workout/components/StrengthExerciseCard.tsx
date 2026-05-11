@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Typography, Card, Button } from '../../../components/ui';
 import { cn } from '../../../lib/utils';
 import { ActiveExercise } from '../../../types';
@@ -28,6 +29,7 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
   onAddSet,
   onRemoveSet,
 }) => {
+  const { t } = useTranslation();
   const { exercise, sets } = activeEx;
   const doneSets = sets.filter((s) => s.done).length;
   const isCurrent = doneSets < sets.length;
@@ -61,7 +63,7 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
           </div>
           {exercise.seat_position && (
             <div className="mt-1 font-mono text-[9px] opacity-60 uppercase tracking-wider">
-              Seat: {exercise.seat_position}
+              {t('workout.seatLabel', { value: exercise.seat_position })}
             </div>
           )}
           {exercise.notes && (
@@ -75,7 +77,7 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
             variant="mono"
             className={isCurrent ? 'text-[oklch(0.95_0.006_75_/_0.50)]' : 'text-[var(--ink-3)]'}
           >
-            Target
+            {t('workout.target')}
           </Typography>
           <Typography variant="bignum" className="text-sm mt-0.5 block">
             {exercise.sets} × {exercise.target_reps}
@@ -85,9 +87,9 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
 
       {/* Table head */}
       <div className="grid grid-cols-[32px_1fr_1fr_60px] p-[8px_14px_6px_16px] border-b border-[var(--hair)] bg-[var(--paper-2)]/30">
-        <Typography variant="mono" className="text-[9px]">SET</Typography>
-        <Typography variant="mono" className="text-center text-[9px]">KG</Typography>
-        <Typography variant="mono" className="text-center text-[9px]">REPS</Typography>
+        <Typography variant="mono" className="text-[9px]">{t('workout.set')}</Typography>
+        <Typography variant="mono" className="text-center text-[9px]">{t('workout.kg')}</Typography>
+        <Typography variant="mono" className="text-center text-[9px]">{t('workout.reps')}</Typography>
         <span />
       </div>
 
@@ -154,7 +156,7 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
           disabled={sets.length <= 1}
           className="h-8 px-3 font-mono text-[9px] uppercase tracking-widest border-[var(--border)] text-[var(--ink-3)]"
         >
-          − Set
+          {t('workout.removeSet')}
         </Button>
         <Button
           variant="ghost"
@@ -162,7 +164,7 @@ export const StrengthExerciseCard: React.FC<StrengthExerciseCardProps> = ({
           onClick={() => onAddSet(exIdx)}
           className="h-8 px-3 font-mono text-[9px] uppercase tracking-widest border-[var(--border)] text-[var(--ink-3)]"
         >
-          + Set
+          {t('workout.addSet')}
         </Button>
       </div>
     </Card>

@@ -1,38 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore, useThemeStore, ThemeChoice } from '../store/store';
+import { useTranslation } from 'react-i18next';
+import { useAuthStore, useThemeStore, useUIStore, ThemeChoice } from '../store/store';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Badge } from '../components/ui';
 import { ApexMark } from '../components/ApexMark';
-
-const THEME_OPTIONS: { value: ThemeChoice; label: string; icon: React.ReactNode }[] = [
-  {
-    value: 'light', label: 'Light',
-    icon: (
-      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-        <circle cx="12" cy="12" r="5"/>
-        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'dark', label: 'Dark',
-    icon: (
-      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'system', label: 'Auto',
-    icon: (
-      <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-        <path d="M8 21h8M12 17v4"/>
-      </svg>
-    ),
-  },
-];
+import type { SupportedLocale } from '../i18n';
 
 declare const __APP_VERSION__: string;
 
@@ -48,10 +21,46 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+const LOCALE_OPTIONS: { value: SupportedLocale; flag: string }[] = [
+  { value: 'en', flag: '🇬🇧' },
+  { value: 'de', flag: '🇩🇪' },
+];
+
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, signOut, updateName } = useAuthStore();
   const { theme, setTheme }           = useThemeStore();
+  const { locale, setLocalePreference } = useUIStore();
+
+  const THEME_OPTIONS: { value: ThemeChoice; label: string; icon: React.ReactNode }[] = [
+    {
+      value: 'light', label: t('settings.themeLight'),
+      icon: (
+        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      ),
+    },
+    {
+      value: 'dark', label: t('settings.themeDark'),
+      icon: (
+        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      ),
+    },
+    {
+      value: 'system', label: t('settings.themeAuto'),
+      icon: (
+        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <path d="M8 21h8M12 17v4"/>
+        </svg>
+      ),
+    },
+  ];
 
   const [name,             setName]             = useState(user?.name || '');
   const [email,            setEmail]            = useState(user?.email || '');
@@ -90,7 +99,7 @@ export default function SettingsPage() {
   }
 
   async function handleUpdatePassword() {
-    if (newPw !== confirmPw) { setPwError('Passwords do not match'); return; }
+    if (newPw !== confirmPw) { setPwError(t('settings.passwordMismatch')); return; }
     setPwSaving(true); setPwError(''); setPwSaved(false);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPw });
@@ -133,13 +142,13 @@ export default function SettingsPage() {
           margin: '0 0 3px', fontFamily: 'var(--mono)', fontSize: 9,
           letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--ink-4)',
         }}>
-          Account
+          {t('settings.pageLabel')}
         </p>
         <h1 style={{
           margin: 0, fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em',
           lineHeight: 1.1, color: 'var(--ink)',
         }}>
-          Settings
+          {t('settings.heading')}
         </h1>
       </div>
 
@@ -147,24 +156,24 @@ export default function SettingsPage() {
 
         {/* Profile */}
         <div className="surface" style={{ padding: '18px 18px' }}>
-          <SectionLabel>Profile</SectionLabel>
+          <SectionLabel>{t('settings.profile')}</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Input
-              label="Name"
+              label={t('settings.name')}
               value={name}
               onChange={(e) => { setName(e.target.value); setProfileSaved(false); }}
-              placeholder="Your name"
+              placeholder={t('settings.namePlaceholder')}
             />
             <Input
-              label="Email Address"
+              label={t('settings.emailAddress')}
               type="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setProfileSaved(false); setEmailConfirmSent(false); }}
-              placeholder="you@example.com"
+              placeholder={t('settings.emailPlaceholder')}
             />
             {emailConfirmSent && (
               <Badge variant="info" className="py-2.5 px-4 text-[10px]">
-                Confirmation sent to <strong>{email.trim().toLowerCase()}</strong> — click the link to update.
+                {t('settings.confirmSent', { email: email.trim().toLowerCase() })}
               </Badge>
             )}
             {profileError && (
@@ -181,24 +190,26 @@ export default function SettingsPage() {
                 </svg>
               )}
             >
-              {profileSaved ? 'Saved' : 'Save Profile'}
+              {profileSaved ? t('settings.saved') : t('settings.saveProfile')}
             </Button>
           </div>
         </div>
 
         {/* Appearance */}
         <div className="surface" style={{ padding: '18px 18px' }}>
-          <SectionLabel>Appearance</SectionLabel>
+          <SectionLabel>{t('settings.appearance')}</SectionLabel>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
-                Theme
+                {t('settings.theme')}
               </div>
               <div style={{
                 marginTop: 3, fontFamily: 'var(--mono)', fontSize: 9,
                 letterSpacing: '0.04em', color: 'var(--ink-4)',
               }}>
-                {theme === 'system' ? 'Following device' : `Always ${theme}`}
+                {theme === 'system'
+                  ? t('settings.themeFollowDevice')
+                  : t('settings.themeAlways', { theme: theme === 'light' ? t('settings.themeLight').toLowerCase() : t('settings.themeDark').toLowerCase() })}
               </div>
             </div>
             <div className="seg-ctrl">
@@ -216,29 +227,59 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Language */}
+        <div className="surface" style={{ padding: '18px 18px' }}>
+          <SectionLabel>{t('settings.language')}</SectionLabel>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                {t('settings.languageLabel')}
+              </div>
+              <div style={{
+                marginTop: 3, fontFamily: 'var(--mono)', fontSize: 9,
+                letterSpacing: '0.04em', color: 'var(--ink-4)',
+              }}>
+                {t('settings.languageDesc')}
+              </div>
+            </div>
+            <div className="seg-ctrl">
+              {LOCALE_OPTIONS.map(({ value, flag }) => (
+                <button
+                  key={value}
+                  className={`seg-btn flex items-center gap-1.5 px-3 h-8 ${locale === value ? 'active' : ''}`}
+                  onClick={() => setLocalePreference(value)}
+                >
+                  <span style={{ fontSize: 14, lineHeight: 1 }}>{flag}</span>
+                  {value === 'en' ? t('settings.english') : t('settings.german')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Security */}
         <div className="surface" style={{ padding: '18px 18px' }}>
-          <SectionLabel>Security</SectionLabel>
+          <SectionLabel>{t('settings.security')}</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <Input
-              label="New Password"
+              label={t('settings.newPassword')}
               type="password"
               value={newPw}
               onChange={(e) => { setNewPw(e.target.value); setPwError(''); setPwSaved(false); }}
-              placeholder="Min. 8 characters"
+              placeholder={t('settings.newPasswordPlaceholder')}
             />
             <Input
-              label="Confirm New Password"
+              label={t('settings.confirmNewPassword')}
               type="password"
               value={confirmPw}
               onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); setPwSaved(false); }}
-              placeholder="Repeat new password"
+              placeholder={t('settings.confirmPasswordPlaceholder')}
             />
             {pwError && (
               <Badge variant="danger" className="py-2.5 px-4 text-[10px]">{pwError}</Badge>
             )}
             {pwSaved && (
-              <Badge variant="success" className="py-2.5 px-4 text-[10px]">Password updated successfully.</Badge>
+              <Badge variant="success" className="py-2.5 px-4 text-[10px]">{t('settings.passwordUpdated')}</Badge>
             )}
             <Button
               onClick={handleUpdatePassword}
@@ -246,7 +287,7 @@ export default function SettingsPage() {
               isLoading={pwSaving}
               className="h-11"
             >
-              Update Password
+              {t('settings.updatePassword')}
             </Button>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0' }}>
@@ -254,13 +295,13 @@ export default function SettingsPage() {
               <span style={{
                 fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em',
                 color: 'var(--ink-4)', opacity: 0.5,
-              }}>OR</span>
+              }}>{t('common.or')}</span>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
 
             {resetSent ? (
               <Badge variant="info" className="py-2.5 px-4 text-[10px]">
-                Check your email — reset link sent to <strong>{user?.email}</strong>.
+                {t('settings.resetSent', { email: user?.email })}
               </Badge>
             ) : (
               <>
@@ -273,7 +314,7 @@ export default function SettingsPage() {
                   isLoading={resetSending}
                   className="h-11 text-xs"
                 >
-                  Send Reset Link via Email
+                  {t('settings.sendResetLink')}
                 </Button>
               </>
             )}
@@ -301,7 +342,7 @@ export default function SettingsPage() {
             strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>
-          Sign Out
+          {t('settings.signOut')}
         </button>
 
         {/* Version */}
@@ -319,7 +360,7 @@ export default function SettingsPage() {
             fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.08em',
             color: 'var(--ink-4)', opacity: 0.4, textTransform: 'uppercase',
           }}>
-            v{__APP_VERSION__} · Outlift Yesterday
+            {t('settings.version', { version: __APP_VERSION__ })}
           </span>
         </div>
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/ui';
 import { TrainingPlan } from '../../../types';
 import { timeAgo } from '../../../lib/utils';
@@ -10,18 +11,19 @@ interface ProgramListProps {
 
 export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="px-5 pb-[22px]">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-          Programs
+          {t('dashboard.programs')}
         </h3>
         <span style={{
           fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.05em',
           color: 'var(--ink-4)',
         }}>
-          {plans.length} {plans.length === 1 ? 'plan' : 'plans'}
+          {t('dashboard.plans', { count: plans.length })}
         </span>
       </div>
 
@@ -48,16 +50,16 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
               margin: '0 0 4px', fontFamily: 'var(--mono)', fontSize: 10,
               letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--ink-3)',
             }}>
-              No plans yet
+              {t('dashboard.noPlansTitle')}
             </p>
             <p style={{
               margin: 0, fontSize: 12, color: 'var(--ink-4)', lineHeight: 1.5,
             }}>
-              Create your first training plan to get started
+              {t('dashboard.noPlansBody')}
             </p>
           </div>
           <Button onClick={() => navigate('/setup')} className="max-w-[180px] mx-auto h-11">
-            Create first plan
+            {t('dashboard.createFirstPlan')}
           </Button>
         </div>
       ) : (
@@ -94,21 +96,21 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
                     fontFamily: 'var(--mono)', fontSize: 9,
                     letterSpacing: '0.04em', color: 'var(--ink-4)',
                   }}>
-                    {plan.exercise_count} exercises
+                    {t('common.exercises', { count: plan.exercise_count })}
                   </span>
                   <span style={{ color: 'var(--ink-4)', fontSize: 9 }}>·</span>
                   <span style={{
                     fontFamily: 'var(--mono)', fontSize: 9,
                     letterSpacing: '0.04em', color: 'var(--ink-4)',
                   }}>
-                    {plan.session_count} sessions
+                    {t('common.sessions', { count: plan.session_count })}
                   </span>
                   <span style={{ color: 'var(--ink-4)', fontSize: 9 }}>·</span>
                   <span style={{
                     fontFamily: 'var(--mono)', fontSize: 9,
                     color: 'var(--ink-3)',
                   }}>
-                    {plan.last_used ? timeAgo(plan.last_used) : 'Never done'}
+                    {plan.last_used ? timeAgo(plan.last_used) : t('common.never')}
                   </span>
                 </div>
               </button>
@@ -131,7 +133,7 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
                   <svg width={9} height={9} viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden>
                     <path d="M7 4.5v15l13-7.5z"/>
                   </svg>
-                  Start
+                  {t('dashboard.start')}
                 </button>
               </div>
             </div>
@@ -151,7 +153,7 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
             }}
             className="hover:bg-[var(--paper-2)] hover:text-[var(--ink-2)] active:scale-[0.99]"
           >
-            + Add New Plan
+            {t('dashboard.addNewPlan')}
           </button>
         </div>
       )}

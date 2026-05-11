@@ -1,20 +1,23 @@
 import React from 'react';
-import { dailyQuote } from '../../../lib/utils';
+import { useTranslation } from 'react-i18next';
+import type { Translations } from '../../../i18n/locales/en';
 
 interface DashboardHeaderProps {
   name: string | null;
 }
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ name }) => {
+  const { t, i18n } = useTranslation();
   const firstName = name ? name.split(' ')[0] : null;
-  const greeting  = getGreeting();
+  const h = new Date().getHours();
+  const greeting = h < 12 ? t('dashboard.greeting.morning')
+    : h < 17 ? t('dashboard.greeting.afternoon')
+    : t('dashboard.greeting.evening');
+
+  const quotes = t('quotes', { returnObjects: true }) as Translations['quotes'];
+  const now = new Date();
+  const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+  const quote = quotes[dayOfYear % quotes.length];
 
   return (
     <div className="px-5 pt-[20px] pb-5">
@@ -37,7 +40,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ name }) => {
         lineHeight: 1.1,
         color: 'var(--ink)',
       }}>
-        {firstName ? firstName : 'Athlete'} 👋
+        {firstName ? firstName : t('dashboard.greeting.fallback')} 👋
       </h1>
 
       {/* Quote card */}
@@ -61,7 +64,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ name }) => {
           color: 'var(--ink-2)',
           lineHeight: 1.55,
         }}>
-          {dailyQuote()}
+          {quote}
         </p>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useWorkoutStore } from '../store/store';
 
 const NAV_ROUTES = ['/dashboard', '/progress', '/settings'];
@@ -26,16 +27,17 @@ const UserIcon = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Home',     Icon: HomeIcon  },
-  { path: '/progress',  label: 'Progress', Icon: ChartIcon },
-  { path: '/settings',  label: 'Profile',  Icon: UserIcon  },
-];
-
 export default function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { sessionId, syncPending } = useWorkoutStore();
+
+  const NAV_ITEMS = [
+    { path: '/dashboard', label: t('nav.home'),     Icon: HomeIcon  },
+    { path: '/progress',  label: t('nav.progress'), Icon: ChartIcon },
+    { path: '/settings',  label: t('nav.profile'),  Icon: UserIcon  },
+  ];
 
   const isNavRoute = NAV_ROUTES.some((r) => location.pathname === r);
   if (!isNavRoute) return null;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Typography, Card } from '../../../components/ui';
 import { cn } from '../../../lib/utils';
 
@@ -11,6 +12,7 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
   timer,
   lastSet,
 }) => {
+  const { t } = useTranslation();
   const [customSeconds, setCustomSeconds] = useState(() => timer.initialSeconds);
   const [showCustomTimer, setShowCustomTimer] = useState(false);
   const [timerJustDone, setTimerJustDone] = useState(false);
@@ -45,7 +47,7 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
     <div className="ft-timer-panel fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-40">
       {/* Preset buttons row */}
       <div className="flex items-center gap-1.5 mb-2.5">
-        <Typography variant="mono" className="text-[oklch(0.95_0.006_75_/_0.40)] mr-1 flex-shrink-0">REST</Typography>
+        <Typography variant="mono" className="text-[oklch(0.95_0.006_75_/_0.40)] mr-1 flex-shrink-0">{t('workout.rest')}</Typography>
         {PRESETS.map((secs) => {
           const label = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
           const active = timer.initialSeconds === secs && timer.isRunning;
@@ -102,7 +104,7 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
             onClick={() => { timer.startFrom(customSeconds); setShowCustomTimer(false); }}
             className="h-9 px-4 font-bold"
           >
-            Set
+            {t('workout.timerSet')}
           </Button>
         </Card>
       )}
@@ -115,7 +117,7 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
               variant="bignum"
               className="text-[50px] leading-none text-[var(--lime)] animate-[timer-done-pop_0.38s_var(--ease-spring)_both] whitespace-nowrap block"
             >
-              Done!
+              {t('workout.timerDone')}
             </Typography>
           ) : (
             <Typography
@@ -153,21 +155,21 @@ export const RestTimerPanel: React.FC<RestTimerPanelProps> = ({
           onClick={timer.isRunning ? timer.pause : timer.start}
           className="h-[42px] bg-[oklch(0.95_0.006_75_/_0.95)] text-[var(--surface-hi)] border-none font-bold active:scale-95"
         >
-          {timer.isRunning ? 'Pause' : 'Start'}
+          {timer.isRunning ? t('workout.timerPause') : t('workout.timerStart')}
         </Button>
         <Button
           variant="ghost"
           onClick={timer.reset}
           className="h-[42px] border-[oklch(0.95_0.006_75_/_0.14)] text-[oklch(0.95_0.006_75_/_0.75)] hover:bg-white/5"
         >
-          Reset
+          {t('workout.timerReset')}
         </Button>
         <Button
           variant="ghost"
           onClick={timer.skip}
           className="h-[42px] border-[oklch(0.95_0.006_75_/_0.14)] text-[oklch(0.95_0.006_75_/_0.75)] hover:bg-white/5"
         >
-          Skip
+          {t('workout.timerSkip')}
         </Button>
       </div>
     </div>

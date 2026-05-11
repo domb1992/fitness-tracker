@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Typography, Card, Sheet } from '../../../components/ui';
 import { WorkoutSession } from '../../../types';
 import { fmtDuration, timeAgo } from '../../../lib/utils';
@@ -16,12 +17,13 @@ export const AllSessionsSheet: React.FC<AllSessionsSheetProps> = ({
   sessions,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <Sheet
       isOpen={isOpen}
       onClose={onClose}
-      title="All Workouts"
+      title={t('dashboard.allWorkouts')}
       className="ft-sheet"
     >
       <div className="flex flex-col gap-2 mt-2">
@@ -41,7 +43,7 @@ export const AllSessionsSheet: React.FC<AllSessionsSheetProps> = ({
                 {s.plan_name}
               </div>
               <Typography variant="mono" className="mt-1 normal-case text-[9px] opacity-70 block">
-                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {s.total_sets ?? 0} sets
+                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
               </Typography>
             </div>
             <svg

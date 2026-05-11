@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { WorkoutSession } from '../../../types';
 import { fmtDuration, timeAgo } from '../../../lib/utils';
 import { useUIStore } from '../../../store/store';
@@ -14,6 +15,7 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
   sessions, onShowAll, onDelete,
 }) => {
   const navigate  = useNavigate();
+  const { t } = useTranslation();
   const recentSess = sessions.slice(0, 5);
   const { dashRecentOpen: open, setDashRecentOpen: setOpen } = useUIStore();
 
@@ -31,7 +33,7 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
           <h3 style={{
             margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)',
           }}>
-            Recent Workouts
+            {t('dashboard.recentWorkouts')}
           </h3>
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
             style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
@@ -49,7 +51,7 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
             }}
             className="hover:text-[var(--ink)] transition-colors"
           >
-            See all
+            {t('dashboard.seeAll')}
           </button>
         )}
       </div>
@@ -85,12 +87,12 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
                 marginTop: 4, fontFamily: 'var(--mono)', fontSize: 9,
                 letterSpacing: '0.04em', color: 'var(--ink-3)',
               }}>
-                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {s.total_sets ?? 0} sets
+                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
               </div>
             </button>
             <button
               onClick={() => onDelete(s.id)}
-              aria-label={`Delete ${s.plan_name} workout`}
+              aria-label={`${t('common.delete')} ${s.plan_name}`}
               style={{
                 width: 32, height: 32, marginRight: 10, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',

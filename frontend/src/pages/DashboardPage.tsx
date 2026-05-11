@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { plansApi, sessionsApi } from '../api/client';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useAuthStore, useWorkoutStore } from '../store/store';
@@ -15,6 +16,7 @@ import { RecentWorkoutList } from './dashboard/components/RecentWorkoutList';
 import { AllSessionsSheet } from './dashboard/components/AllSessionsSheet';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const isOnline = useOnlineStatus();
 
@@ -70,7 +72,7 @@ export default function DashboardPage() {
       clearWorkout();
       await load();
     } catch (err: any) {
-      setSyncError(err.message || 'Sync failed — will retry when online');
+      setSyncError(err.message || t('dashboard.syncFailed'));
       setSyncPending(true);
     } finally {
       setSyncing(false);
@@ -98,7 +100,7 @@ export default function DashboardPage() {
     return (
       <div className="ft-loader">
         <div className="ft-loader-dot" />
-        <span className="mono-tag">Loading…</span>
+        <span className="mono-tag">{t('common.loading')}</span>
       </div>
     );
   }
@@ -141,7 +143,7 @@ export default function DashboardPage() {
               </svg>
             </div>
             <p className="mono-tag text-[var(--ink-4)] m-0">
-              No workouts yet — start your first session above
+              {t('dashboard.noWorkouts')}
             </p>
           </div>
         </div>
@@ -155,10 +157,10 @@ export default function DashboardPage() {
 
       {deleteConfirmId && (
         <ConfirmDialog
-          title="Delete workout?"
-          message="This workout will be permanently removed and won't count toward your stats."
-          confirmLabel={deleting ? 'Deleting…' : 'Delete'}
-          cancelLabel="Cancel"
+          title={t('dashboard.deleteTitle')}
+          message={t('dashboard.deleteMessage')}
+          confirmLabel={deleting ? t('common.deleting') : t('dashboard.deleteConfirm')}
+          cancelLabel={t('common.cancel')}
           dangerous
           onConfirm={() => handleDeleteSession(deleteConfirmId)}
           onCancel={() => setDeleteConfirmId(null)}

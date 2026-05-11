@@ -53,7 +53,7 @@ export const plansApi = {
     });
   },
 
-  create: async (d: { name: string; description?: string; color?: string; plan_order?: number }) => {
+  create: async (d: { name: string; description?: string; color?: string }) => {
     const { data: { user } } = await supabase.auth.getUser();
     const { data: plan, error } = await supabase
       .from('training_plans')

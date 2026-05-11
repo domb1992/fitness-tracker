@@ -23,7 +23,7 @@ export default function SetupPage() {
     if (!planName.trim()) { setError('Please enter a plan name'); return; }
     setSaving(true); setError('');
     try {
-      const plan = await plansApi.create({ name: planName, description: planDesc, color: planColor, plan_order: Date.now() });
+      const plan = await plansApi.create({ name: planName, description: planDesc, color: planColor });
       setCurrentPlan(plan);
     } catch (err: any) {
       setError(err.message || 'Failed to create plan');

@@ -320,6 +320,26 @@ CREATE TRIGGER trg_exercises_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
+-- Auto-assign plan_order on INSERT (replaces frontend Date.now() which overflows INTEGER)
+CREATE OR REPLACE FUNCTION set_plan_order()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.plan_order := COALESCE(
+    (SELECT MAX(plan_order) FROM training_plans WHERE user_id = NEW.user_id),
+    0
+  ) + 1;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_training_plans_plan_order ON training_plans;
+CREATE TRIGGER trg_training_plans_plan_order
+  BEFORE INSERT ON training_plans
+  FOR EACH ROW
+  EXECUTE FUNCTION set_plan_order();
+
 
 -- =============================================================================
 -- 8. RPC functions  (final authoritative versions — same as 004_functions.sql)

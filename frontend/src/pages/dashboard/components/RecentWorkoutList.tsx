@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutSession } from '../../../types';
 import { fmtDuration, timeAgo } from '../../../lib/utils';
@@ -14,19 +14,29 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
 }) => {
   const navigate    = useNavigate();
   const recentSess  = sessions.slice(0, 5);
+  const [open, setOpen] = useState(true);
 
   if (recentSess.length === 0) return null;
 
   return (
     <div className="px-5 pb-6">
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12,
       }}>
-        <h3 style={{
-          margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)',
-        }}>
-          Recent Workouts
-        </h3>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <h3 style={{
+            margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)',
+          }}>
+            Recent Workouts
+          </h3>
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+            style={{ transform: open ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
         {sessions.length > 5 && (
           <button
             onClick={onShowAll}
@@ -43,6 +53,8 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
         )}
       </div>
 
+      <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 0.22s ease', overflow: 'hidden' }}>
+      <div style={{ minHeight: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {recentSess.map((s) => (
           <div
@@ -96,6 +108,8 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
           </div>
         ))}
       </div>
+      </div>{/* end collapsible inner */}
+      </div>{/* end collapsible grid */}
     </div>
   );
 };

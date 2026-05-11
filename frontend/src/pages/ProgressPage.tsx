@@ -194,6 +194,10 @@ export default function ProgressPage() {
   const [liftRpcReady, setLiftRpcReady] = useState(true);  // false = RPC not deployed yet
   const [showAllLifts, setShowAllLifts] = useState(false);
 
+  const [calOpen,  setCalOpen]  = useState(true);
+  const [volOpen,  setVolOpen]  = useState(true);
+  const [liftOpen, setLiftOpen] = useState(true);
+
   const touchStartX = useRef<number | null>(null);
 
   // Initial: stats + sessions
@@ -395,9 +399,18 @@ export default function ProgressPage() {
       {/* Calendar — swipe or arrow to change month */}
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
-            {isCurrent ? 'This Month' : 'Month'}
-          </h3>
+          <button
+            onClick={() => setCalOpen((v) => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
+              {isCurrent ? 'This Month' : 'Month'}
+            </h3>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: calOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <button aria-label="Previous month" onClick={() => setMonthOffset((o) => o - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-3)', padding: '2px 4px', lineHeight: 1 }}>
               <svg aria-hidden="true" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -408,6 +421,8 @@ export default function ProgressPage() {
             </button>
           </div>
         </div>
+        <div style={{ display: 'grid', gridTemplateRows: calOpen ? '1fr' : '0fr', transition: 'grid-template-rows 0.22s ease', overflow: 'hidden' }}>
+        <div style={{ minHeight: 0 }}>
         <div className="surface" style={{ padding: '14px 14px 12px' }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -452,16 +467,29 @@ export default function ProgressPage() {
             )}
           </div>
         </div>
+        </div>{/* end collapsible inner */}
+        </div>{/* end collapsible grid */}
       </div>
 
       {/* ── Volume by Muscle Group ───────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+        <button
+          onClick={() => setVolOpen((v) => !v)}
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
             Volume by Muscle
           </h3>
-          <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>{monthName.split(' ')[0]}</span>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>{monthName.split(' ')[0]}</span>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: volOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+        </button>
+        <div style={{ display: 'grid', gridTemplateRows: volOpen ? '1fr' : '0fr', transition: 'grid-template-rows 0.22s ease', overflow: 'hidden' }}>
+        <div style={{ minHeight: 0 }}>
         <div className="surface" style={{ padding: '16px 14px' }}>
           {volumeLoading ? (
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -488,22 +516,32 @@ export default function ProgressPage() {
             </span>
           </div>
         )}
+        </div>{/* end collapsible inner */}
+        </div>{/* end collapsible grid */}
       </div>
 
       {/* ── Lift Progression ─────────────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+        <button onClick={() => setLiftOpen((v) => !v)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
             Lift Progression
           </h3>
-          <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
-            {liftLoading
-              ? '…'
-              : liftRpcReady
-                ? `${filteredLifts.length} lifts`
-                : `${fallbackLifts.length} lifts`}
-          </span>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
+              {liftLoading
+                ? '…'
+                : liftRpcReady
+                  ? `${filteredLifts.length} lifts`
+                  : `${fallbackLifts.length} lifts`}
+            </span>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+              style={{ transform: liftOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+        </button>
+        <div style={{ display: 'grid', gridTemplateRows: liftOpen ? '1fr' : '0fr', transition: 'grid-template-rows 0.22s ease', overflow: 'hidden' }}>
+        <div style={{ minHeight: 0 }}>
 
         {liftLoading ? (
           <div className="surface" style={{ padding: '24px 14px', textAlign: 'center' }}>
@@ -621,6 +659,8 @@ export default function ProgressPage() {
             })}
           </div>
         )}
+        </div>{/* end collapsible inner */}
+        </div>{/* end collapsible grid */}
       </div>
 
       {/* Empty state */}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutSession } from '../../../types';
 import { fmtDuration, timeAgo } from '../../../lib/utils';
+import { useUIStore } from '../../../store/store';
 
 interface RecentWorkoutListProps {
   sessions: WorkoutSession[];
@@ -12,9 +13,9 @@ interface RecentWorkoutListProps {
 export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
   sessions, onShowAll, onDelete,
 }) => {
-  const navigate    = useNavigate();
-  const recentSess  = sessions.slice(0, 5);
-  const [open, setOpen] = useState(true);
+  const navigate  = useNavigate();
+  const recentSess = sessions.slice(0, 5);
+  const { dashRecentOpen: open, setDashRecentOpen: setOpen } = useUIStore();
 
   if (recentSess.length === 0) return null;
 
@@ -24,7 +25,7 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12,
       }}>
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(!open)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <h3 style={{

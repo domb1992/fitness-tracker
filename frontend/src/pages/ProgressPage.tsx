@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sessionsApi, exercisesApi } from '../api/client';
+import { useUIStore } from '../store/store';
 import { Stats, MuscleVolume, LiftProgressionEntry, ExerciseStats } from '../types';
 
 // ─── Calendar helpers ─────────────────────────────────────────────────────────
@@ -194,9 +195,9 @@ export default function ProgressPage() {
   const [liftRpcReady, setLiftRpcReady] = useState(true);  // false = RPC not deployed yet
   const [showAllLifts, setShowAllLifts] = useState(false);
 
-  const [calOpen,  setCalOpen]  = useState(true);
-  const [volOpen,  setVolOpen]  = useState(true);
-  const [liftOpen, setLiftOpen] = useState(true);
+  const { progressCalOpen:  calOpen,  setProgressCalOpen:  setCalOpen,
+          progressVolOpen:  volOpen,  setProgressVolOpen:  setVolOpen,
+          progressLiftOpen: liftOpen, setProgressLiftOpen: setLiftOpen } = useUIStore();
 
   const touchStartX = useRef<number | null>(null);
 
@@ -400,7 +401,7 @@ export default function ProgressPage() {
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <button
-            onClick={() => setCalOpen((v) => !v)}
+            onClick={() => setCalOpen(!calOpen)}
             style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
@@ -474,7 +475,7 @@ export default function ProgressPage() {
       {/* ── Volume by Muscle Group ───────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
         <button
-          onClick={() => setVolOpen((v) => !v)}
+          onClick={() => setVolOpen(!volOpen)}
           style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
@@ -522,7 +523,7 @@ export default function ProgressPage() {
 
       {/* ── Lift Progression ─────────────────────────────────────────────────── */}
       <div style={{ padding: '0 20px 24px' }}>
-        <button onClick={() => setLiftOpen((v) => !v)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+        <button onClick={() => setLiftOpen(!liftOpen)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
             Lift Progression
           </h3>

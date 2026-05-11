@@ -47,6 +47,35 @@ export const useThemeStore = create<ThemeState>()(
   )
 );
 
+// ─── UI State Store ───────────────────────────────────────────────────────────
+
+interface UIState {
+  progressCalOpen:  boolean;
+  progressVolOpen:  boolean;
+  progressLiftOpen: boolean;
+  dashRecentOpen:   boolean;
+  setProgressCalOpen:  (v: boolean) => void;
+  setProgressVolOpen:  (v: boolean) => void;
+  setProgressLiftOpen: (v: boolean) => void;
+  setDashRecentOpen:   (v: boolean) => void;
+}
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      progressCalOpen:  true,
+      progressVolOpen:  true,
+      progressLiftOpen: true,
+      dashRecentOpen:   true,
+      setProgressCalOpen:  (v) => set({ progressCalOpen:  v }),
+      setProgressVolOpen:  (v) => set({ progressVolOpen:  v }),
+      setProgressLiftOpen: (v) => set({ progressLiftOpen: v }),
+      setDashRecentOpen:   (v) => set({ dashRecentOpen:   v }),
+    }),
+    { name: 'fittrack-ui' }
+  )
+);
+
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 
 interface AuthState {

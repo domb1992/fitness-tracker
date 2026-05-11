@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useThemeStore, ThemeChoice } from '../store/store';
 import { supabase } from '../lib/supabase';
 import { Button, Input, Badge } from '../components/ui';
+import { ApexMark } from '../components/ApexMark';
 
 const THEME_OPTIONS: { value: ThemeChoice; label: string; icon: React.ReactNode }[] = [
   {
@@ -304,12 +305,21 @@ export default function SettingsPage() {
         </button>
 
         {/* Version */}
-        <div style={{ textAlign: 'center', paddingBottom: 8 }}>
+        <div style={{ textAlign: 'center', paddingBottom: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, opacity: 0.35 }}>
+            <ApexMark size={13} color="var(--ink)" accentColor="var(--lime)" />
+            <span style={{
+              fontFamily: 'var(--sans)', fontWeight: 600, fontSize: 13,
+              letterSpacing: '-0.04em', color: 'var(--ink)', lineHeight: 1,
+            }}>
+              Fit<span style={{ fontWeight: 300, opacity: 0.5 }}>Track</span>
+            </span>
+          </div>
           <span style={{
-            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.05em',
-            color: 'var(--ink-4)', opacity: 0.4,
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.08em',
+            color: 'var(--ink-4)', opacity: 0.4, textTransform: 'uppercase',
           }}>
-            FitTrack v{__APP_VERSION__}
+            v{__APP_VERSION__} · Outlift Yesterday
           </span>
         </div>
 

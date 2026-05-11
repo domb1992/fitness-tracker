@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Input, Badge } from '../components/ui';
+import { ApexMark } from '../components/ApexMark';
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -60,33 +61,39 @@ export default function AuthPage() {
     <div className="ft-screen flex flex-col min-h-dvh bg-[var(--paper-2)]">
 
       {/* Brand section */}
-      <div className="flex-shrink-0 bg-[var(--ink)] px-8 pt-14 pb-10 flex flex-col items-center text-center">
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-          style={{ background: 'var(--lime)' }}
-        >
-          <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="var(--lime-ink)"
-            strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/>
-            <path d="M4 8.5v7"/><path d="M20 8.5v7"/>
-            <rect x="2" y="8" width="3" height="8" rx="1"/>
-            <rect x="19" y="8" width="3" height="8" rx="1"/>
-            <rect x="5" y="6" width="2" height="12" rx="1"/>
-            <rect x="17" y="6" width="2" height="12" rx="1"/>
-          </svg>
-        </div>
-        <h1 style={{
-          margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em',
-          color: 'oklch(0.97 0.004 85)', lineHeight: 1,
+      <div className="flex-shrink-0 bg-[var(--ink)] px-8 pt-16 pb-12 flex flex-col items-center text-center">
+        {/* Apex app icon tile */}
+        <div style={{
+          width: 72, height: 72,
+          borderRadius: 18,
+          background: 'var(--ink-2)',
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 20px 40px -20px rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 20,
         }}>
-          FitTrack
-        </h1>
+          <ApexMark size={38} color="#F2EFE8" accentColor="#D6FF3D" />
+        </div>
+
+        {/* Wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{
+            fontFamily: 'var(--sans)',
+            fontWeight: 600,
+            fontSize: 32,
+            letterSpacing: '-0.04em',
+            color: '#F2EFE8',
+            lineHeight: 1,
+          }}>
+            Fit<span style={{ fontWeight: 300, opacity: 0.45 }}>Track</span>
+          </span>
+        </div>
+
         <p style={{
           margin: '10px 0 0', fontFamily: 'var(--mono)', fontSize: 10,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-          color: 'oklch(0.97 0.004 85 / 0.40)',
+          letterSpacing: '0.16em', textTransform: 'uppercase',
+          color: 'rgba(242,239,232,0.35)',
         }}>
-          The iron never lies
+          ▲ Outlift Yesterday
         </p>
       </div>
 

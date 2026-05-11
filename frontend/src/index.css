@@ -546,6 +546,10 @@ input[type='number'] { -moz-appearance: textfield; }
   box-shadow: 0 -1px 0 var(--hair), 0 -6px 24px oklch(0 0 0 / 0.20);
 }
 
+[data-theme="dark"] .nav-item.active {
+  background: oklch(0.93 0.24 123 / 0.10);
+}
+
 .nav-item {
   flex: 1;
   display: flex;
@@ -573,6 +577,7 @@ input[type='number'] { -moz-appearance: textfield; }
 .nav-item.active {
   color: var(--ink);
   font-weight: 700;
+  background: oklch(0.93 0.24 123 / 0.12);
 }
 
 .nav-item-label {

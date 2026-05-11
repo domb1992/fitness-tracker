@@ -19,11 +19,12 @@
   --paper-3: oklch(0.938 0.013 80);
 
   /* ── Accent — Lime (primary brand) ──────────────────────────────────────── */
-  --lime:       oklch(0.84 0.22 132);
-  --lime-ink:   oklch(0.19 0.10 132);
-  --lime-soft:  oklch(0.96 0.08 132);
-  --lime-glow:  oklch(0.84 0.22 132 / 0.28);
-  --lime-glow2: oklch(0.84 0.22 132 / 0.45);
+  --lime:           oklch(0.84 0.22 132);
+  --lime-ink:       oklch(0.19 0.10 132);
+  --lime-soft:      oklch(0.96 0.08 132);
+  --lime-soft-text: oklch(0.19 0.10 132);
+  --lime-glow:      oklch(0.84 0.22 132 / 0.28);
+  --lime-glow2:     oklch(0.84 0.22 132 / 0.45);
 
   /* ── Accent — Clay (secondary) ──────────────────────────────────────────── */
   --clay:      oklch(0.72 0.09 45);
@@ -36,6 +37,14 @@
   --warning-soft: oklch(0.96 0.07 60);
   --danger:       oklch(0.54 0.22 25);
   --danger-soft:  oklch(0.96 0.05 25);
+
+  /* ── Semantic chart / stat tokens ───────────────────────────────────────── */
+  --positive:         oklch(0.44 0.18 145);
+  --positive-bg:      oklch(0.95 0.07 145);
+  --negative:         oklch(0.48 0.22 25);
+  --negative-bg:      oklch(0.95 0.05 25);
+  --bar-primary:      oklch(0.62 0.19 140);
+  --bar-primary-text: oklch(0.40 0.15 140);
 
   /* ── Borders ─────────────────────────────────────────────────────────────── */
   --hair:         oklch(0.13 0.015 75 / 0.08);
@@ -86,38 +95,47 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 [data-theme="dark"] {
-  /* Backgrounds — warm-tinted deep darks */
-  --paper:   oklch(0.17 0.009 262);
-  --paper-2: oklch(0.12 0.009 262);
-  --paper-3: oklch(0.22 0.009 262);
+  /* ── Backgrounds ─────────────────────────────────────────────────────────── */
+  --paper:   oklch(0.16 0.009 262);   /* app/screen base */
+  --paper-2: oklch(0.11 0.009 262);   /* body outer (darkest, gutters) */
+  --paper-3: oklch(0.27 0.009 262);   /* inputs, interactive controls */
 
-  /* Text — warm off-white */
+  /* ── Text — contrast-checked for WCAG AA on dark surfaces ───────────────── */
   --ink:   oklch(0.95 0.006 75);
-  --ink-2: oklch(0.75 0.005 75);
-  --ink-3: oklch(0.55 0.005 75);
-  --ink-4: oklch(0.38 0.004 75);
+  --ink-2: oklch(0.78 0.005 75);
+  --ink-3: oklch(0.60 0.005 75);
+  --ink-4: oklch(0.50 0.004 75);   /* was 0.38 — now passes contrast */
 
-  /* Lime stays vibrant */
-  --lime:      oklch(0.85 0.22 132);
-  --lime-ink:  oklch(0.18 0.10 132);
-  --lime-soft: oklch(0.20 0.08 132);
-  --lime-glow: oklch(0.85 0.22 132 / 0.22);
+  /* ── Lime ────────────────────────────────────────────────────────────────── */
+  --lime:           oklch(0.85 0.22 132);
+  --lime-ink:       oklch(0.18 0.10 132);
+  --lime-soft:      oklch(0.22 0.09 132);
+  --lime-soft-text: oklch(0.88 0.18 132);   /* light lime for text on lime-soft bg */
+  --lime-glow:      oklch(0.85 0.22 132 / 0.22);
 
-  /* Semantic (adjusted for dark backgrounds) */
-  --success:      oklch(0.60 0.18 145);
-  --success-soft: oklch(0.22 0.08 145);
+  /* ── Semantic ─────────────────────────────────────────────────────────────── */
+  --success:      oklch(0.65 0.18 145);
+  --success-soft: oklch(0.23 0.08 145);
   --warning:      oklch(0.74 0.17 60);
-  --warning-soft: oklch(0.22 0.08 60);
-  --danger:       oklch(0.65 0.22 25);
-  --danger-soft:  oklch(0.22 0.08 25);
+  --warning-soft: oklch(0.23 0.08 60);
+  --danger:       oklch(0.68 0.22 25);
+  --danger-soft:  oklch(0.23 0.08 25);
 
-  /* Borders — subtle white at low opacity */
+  /* ── Semantic chart / stat tokens ───────────────────────────────────────── */
+  --positive:         oklch(0.68 0.18 145);
+  --positive-bg:      oklch(0.23 0.08 145);
+  --negative:         oklch(0.68 0.22 25);
+  --negative-bg:      oklch(0.23 0.07 25);
+  --bar-primary:      oklch(0.78 0.19 140);
+  --bar-primary-text: oklch(0.88 0.14 140);
+
+  /* ── Borders ─────────────────────────────────────────────────────────────── */
   --hair:         oklch(0.95 0.006 75 / 0.07);
-  --hair-dark:    oklch(0.95 0.006 75 / 0.12);
-  --border:       oklch(0.95 0.006 75 / 0.09);
+  --hair-dark:    oklch(0.95 0.006 75 / 0.13);
+  --border:       oklch(0.95 0.006 75 / 0.10);
   --border-focus: oklch(0.95 0.006 75 / 0.55);
 
-  /* Shadows more opaque in dark (compensates for low contrast) */
+  /* ── Shadows ─────────────────────────────────────────────────────────────── */
   --shadow-xs: 0 1px 3px oklch(0 0 0 / 0.30);
   --shadow-sm: 0 2px 6px oklch(0 0 0 / 0.36), 0 1px 2px oklch(0 0 0 / 0.24);
   --shadow:    0 4px 14px oklch(0 0 0 / 0.40), 0 2px 4px oklch(0 0 0 / 0.28);
@@ -125,10 +143,42 @@
   --shadow-lg: 0 16px 44px oklch(0 0 0 / 0.52), 0 6px 16px oklch(0 0 0 / 0.40);
   --shadow-ink: 0 4px 24px oklch(0 0 0 / 0.55);
 
-  /* High-emphasis surface — even deeper dark in dark mode (not near-white) */
+  /* ── High-emphasis surface ───────────────────────────────────────────────── */
   --surface-hi:      oklch(0.09 0.007 262);
   --surface-hi-text: oklch(0.95 0.006 75);
 }
+
+/* ── Dark mode: surface elevation ────────────────────────────────────────────
+   In dark mode, cards/surfaces must be LIGHTER than the page base so they
+   visually float. Inputs get the lightest treatment (interactive/focused).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .surface {
+  background: oklch(0.22 0.009 262);
+}
+
+[data-theme="dark"] .ft-sheet {
+  background: oklch(0.22 0.009 262);
+}
+
+[data-theme="dark"] .ft-input {
+  background: var(--paper-3);
+}
+
+[data-theme="dark"] .seg-ctrl {
+  background: oklch(0.09 0.007 262);
+}
+[data-theme="dark"] .seg-btn.active {
+  background: oklch(0.22 0.009 262);
+}
+
+[data-theme="dark"] .ghost-btn:hover  { background: oklch(0.22 0.009 262); }
+[data-theme="dark"] .ghost-btn:active { background: var(--paper-3); }
+
+[data-theme="dark"] .icon-btn        { background: oklch(0.22 0.009 262); }
+[data-theme="dark"] .icon-btn:hover  { background: var(--paper-3); }
+[data-theme="dark"] .icon-btn:active { background: oklch(0.30 0.009 262); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Reset

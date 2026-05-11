@@ -106,10 +106,10 @@ function Sparkline({ points }: { points: number[] }) {
 
   const diff = n > 1 ? points[n - 1] - points[0] : 0;
   const color = diff > 0
-    ? 'oklch(0.48 0.18 140)'   // green
+    ? 'var(--positive)'
     : diff < 0
-      ? 'oklch(0.52 0.18 25)'  // red
-      : 'var(--ink-3)';        // neutral
+      ? 'var(--negative)'
+      : 'var(--ink-3)';
 
   if (n === 1) {
     const cy = H / 2;
@@ -156,13 +156,13 @@ function VolumeBar({ label, value, max, isTop }: { label: string; value: number;
       <div style={{ height: 6, background: 'var(--paper-2)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--hair)' }}>
         <div style={{
           height: '100%', width: `${pct}%`,
-          background: isTop ? 'oklch(0.62 0.19 140)' : 'var(--ink)',
+          background: isTop ? 'var(--bar-primary)' : 'var(--ink)',
           borderRadius: 3, transition: 'width 0.4s ease',
         }} />
       </div>
       <span style={{
         fontFamily: 'var(--mono)', fontSize: 10,
-        color: isTop ? 'oklch(0.45 0.15 140)' : 'var(--ink-3)',
+        color: isTop ? 'var(--bar-primary-text)' : 'var(--ink-3)',
         textAlign: 'right',
       }}>
         {value % 1 === 0 ? value : value.toFixed(1)}
@@ -357,7 +357,7 @@ export default function ProgressPage() {
           onClick={handleShare}
           aria-label={copied ? 'Copied' : 'Share progress'}
           className="icon-btn"
-          style={{ color: copied ? 'oklch(0.5 0.18 145)' : undefined, marginTop: 4 }}
+          style={{ color: copied ? 'var(--positive)' : undefined, marginTop: 4 }}
         >
           {copied ? (
             <span style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em' }}>COPIED</span>
@@ -384,7 +384,7 @@ export default function ProgressPage() {
           <div className="mono-tag" style={{ fontSize: 9, color: 'var(--ink-4)', marginBottom: 10 }}>Last 7 Days</div>
           <div className="bignum" style={{
             fontSize: 44, lineHeight: 1,
-            color: (stats?.thisWeek ?? 0) > 0 ? 'oklch(0.42 0.16 145)' : undefined,
+            color: (stats?.thisWeek ?? 0) > 0 ? 'var(--positive)' : undefined,
           }}>
             {stats?.thisWeek ?? 0}
           </div>
@@ -527,11 +527,11 @@ export default function ProgressPage() {
                 const neutral  = e.diff === 0;
                 const period   = formatPeriod(e.first_logged_at, e.last_logged_at);
                 const badgeColor = positive
-                  ? { color: 'oklch(0.40 0.15 140)', bg: 'oklch(0.93 0.07 140)' }
+                  ? { color: 'var(--positive)', bg: 'var(--positive-bg)' }
                   : negative
-                    ? { color: 'oklch(0.48 0.18 25)',  bg: 'oklch(0.95 0.05 25)' }
-                    : { color: 'var(--ink-3)',          bg: 'var(--paper-2)' };
-                const trendColor = positive ? 'oklch(0.40 0.15 140)' : negative ? 'oklch(0.48 0.18 25)' : 'var(--ink-4)';
+                    ? { color: 'var(--negative)', bg: 'var(--negative-bg)' }
+                    : { color: 'var(--ink-3)',    bg: 'var(--paper-2)' };
+                const trendColor = positive ? 'var(--positive)' : negative ? 'var(--negative)' : 'var(--ink-4)';
 
                 return (
                   <button key={e.exercise_id} onClick={() => navigate(`/exercise/${e.exercise_id}`)}
@@ -585,11 +585,11 @@ export default function ProgressPage() {
               const negative = e.diff < 0;
               const period   = formatPeriod(e.first_logged_at ?? '', e.last_logged_at ?? '');
               const badgeColor = positive
-                ? { color: 'oklch(0.40 0.15 140)', bg: 'oklch(0.93 0.07 140)' }
+                ? { color: 'var(--positive)', bg: 'var(--positive-bg)' }
                 : negative
-                  ? { color: 'oklch(0.48 0.18 25)',  bg: 'oklch(0.95 0.05 25)' }
-                  : { color: 'var(--ink-3)',          bg: 'var(--paper-2)' };
-              const trendColor = positive ? 'oklch(0.40 0.15 140)' : negative ? 'oklch(0.48 0.18 25)' : 'var(--ink-4)';
+                  ? { color: 'var(--negative)', bg: 'var(--negative-bg)' }
+                  : { color: 'var(--ink-3)',    bg: 'var(--paper-2)' };
+              const trendColor = positive ? 'var(--positive)' : negative ? 'var(--negative)' : 'var(--ink-4)';
 
               return (
                 <button key={e.exercise_id} onClick={() => navigate(`/exercise/${e.exercise_id}`)}

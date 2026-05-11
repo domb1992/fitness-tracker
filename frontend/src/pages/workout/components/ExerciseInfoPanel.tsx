@@ -144,8 +144,8 @@ export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
                   fontSize: 8,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: 'var(--lime-ink)',
-                  opacity: 0.7,
+                  color: 'var(--lime-soft-text)',
+                  opacity: 0.85,
                   display: 'block',
                   marginBottom: 4,
                 }}>

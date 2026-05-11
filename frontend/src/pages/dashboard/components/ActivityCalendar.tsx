@@ -101,7 +101,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ sessions }) 
             <span style={{
               fontFamily: 'var(--mono)', fontSize: 8,
               letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: d.on ? 'oklch(0.95 0.004 85 / 0.50)' : d.today ? 'var(--ink-3)' : 'var(--ink-4)',
+              color: d.on ? 'var(--paper)' : d.today ? 'var(--ink-3)' : 'var(--ink-4)',
+              opacity: d.on ? 0.65 : 1,
               marginBottom: 4, lineHeight: 1,
             }}>
               {d.label}
@@ -109,7 +110,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ sessions }) 
             <span style={{
               fontFamily: 'var(--mono)', fontSize: 15, fontWeight: 700,
               letterSpacing: '-0.03em', lineHeight: 1,
-              color: d.on ? 'oklch(0.97 0.004 85)' : d.today ? 'var(--ink)' : 'var(--ink-3)',
+              color: d.on ? 'var(--paper)' : d.today ? 'var(--ink)' : 'var(--ink-3)',
             }}>
               {d.num}
             </span>

@@ -1,306 +1,192 @@
 -- =============================================================================
--- FitTrack — Upgrade Script for Existing Production Databases
+-- FitTrack — Complete Fresh-Start Schema
 -- =============================================================================
--- Run this if you have an existing database set up with the legacy files
--- (schema.sql + the add_*.sql patches).  For a fresh database, run
--- migrations/001 → 004 in order instead.
+-- Run this file once on a brand-new Supabase project.
+-- It is the consolidated result of migrations 001–009.
 --
--- SAFE TO RE-RUN: every statement uses IF NOT EXISTS / IF EXISTS guards,
--- or is a CREATE OR REPLACE / DROP … IF EXISTS.
---
--- ORDER OF SECTIONS
---   1. training_plans  — add updated_at, add CHECK constraint
---   2. exercises       — add updated_at, add missing CHECK constraints
---   3. workout_sessions — plan_id → ON DELETE CASCADE, nullable, add CHECK
---   4. set_logs        — exercise_id → ON DELETE CASCADE, REAL→NUMERIC,
---                        add CHECK constraints, add UNIQUE constraint
---   5. Indexes         — three new performance indexes
---   6. RLS policies    — replace IN (...) with EXISTS for exercises + set_logs
---   7. Triggers        — shared set_updated_at() trigger
---   8. RPC functions   — replace all 5 functions with final versions
+-- Sections:
+--   1. Tables
+--   2. Indexes
+--   3. Row Level Security
+--   4. Trigger functions + triggers
+--   5. RPC functions
+--   6. Permission grants / revokes
+--   7. Autovacuum tuning
 -- =============================================================================
-
--- =============================================================================
--- 1. training_plans
--- =============================================================================
-
--- Add updated_at if the column doesn't exist yet
-ALTER TABLE training_plans
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
--- Add CHECK on plan_order (guard against accidental 0 or negative values)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'training_plans'::REGCLASS
-      AND conname   = 'training_plans_plan_order_ck'
-  ) THEN
-    ALTER TABLE training_plans
-      ADD CONSTRAINT training_plans_plan_order_ck CHECK (plan_order > 0);
-  END IF;
-END $$;
 
 
 -- =============================================================================
--- 2. exercises
+-- 1. TABLES
 -- =============================================================================
 
--- Add updated_at if missing
-ALTER TABLE exercises
-  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE TABLE IF NOT EXISTS training_plans (
+  id          UUID        NOT NULL DEFAULT gen_random_uuid(),
+  user_id     UUID        NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  name        TEXT        NOT NULL,
+  description TEXT        NOT NULL DEFAULT '',
+  color       TEXT        NOT NULL DEFAULT '#6366F1',
+  plan_order  INTEGER     NOT NULL DEFAULT 1,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
--- These columns were added by add_exercise_fields.sql / add_warmup_fields.sql /
--- add_muscle_fields.sql.  ADD COLUMN IF NOT EXISTS is idempotent.
-ALTER TABLE exercises
-  ADD COLUMN IF NOT EXISTS seat_position            TEXT    NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS notes                    TEXT    NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS exercise_type            TEXT    NOT NULL DEFAULT 'strength',
-  ADD COLUMN IF NOT EXISTS planned_duration_minutes INTEGER NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS primary_muscles          TEXT[]  NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS secondary_muscles        TEXT[]  NOT NULL DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS movement_pattern         TEXT    NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS equipment                TEXT    NOT NULL DEFAULT '',
-  ADD COLUMN IF NOT EXISTS muscle_source            TEXT    NOT NULL DEFAULT 'none';
+  CONSTRAINT training_plans_pkey          PRIMARY KEY (id),
+  CONSTRAINT training_plans_plan_order_ck CHECK (plan_order > 0)
+);
 
--- CHECK constraints (each guarded so re-runs are safe)
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'exercises'::REGCLASS AND conname = 'exercises_sets_ck') THEN
-    ALTER TABLE exercises ADD CONSTRAINT exercises_sets_ck CHECK (sets > 0);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'exercises'::REGCLASS AND conname = 'exercises_order_ck') THEN
-    ALTER TABLE exercises ADD CONSTRAINT exercises_order_ck CHECK (exercise_order > 0);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'exercises'::REGCLASS AND conname = 'exercises_duration_ck') THEN
-    ALTER TABLE exercises ADD CONSTRAINT exercises_duration_ck CHECK (planned_duration_minutes >= 0);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'exercises'::REGCLASS AND conname = 'exercises_type_ck') THEN
-    ALTER TABLE exercises ADD CONSTRAINT exercises_type_ck CHECK (exercise_type IN ('strength', 'warmup'));
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'exercises'::REGCLASS AND conname = 'exercises_muscle_source_ck') THEN
-    ALTER TABLE exercises ADD CONSTRAINT exercises_muscle_source_ck CHECK (muscle_source IN ('auto', 'manual', 'none'));
-  END IF;
-END $$;
+CREATE TABLE IF NOT EXISTS exercises (
+  id                       UUID        NOT NULL DEFAULT gen_random_uuid(),
+  plan_id                  UUID        NOT NULL REFERENCES training_plans (id) ON DELETE CASCADE,
+  name                     TEXT        NOT NULL,
+  sets                     INTEGER     NOT NULL DEFAULT 3,
+  target_reps              TEXT        NOT NULL DEFAULT '10',
+  exercise_order           INTEGER     NOT NULL DEFAULT 1,
+  seat_position            TEXT        NOT NULL DEFAULT '',
+  notes                    TEXT        NOT NULL DEFAULT '',
+  exercise_type            TEXT        NOT NULL DEFAULT 'strength',
+  planned_duration_minutes INTEGER     NOT NULL DEFAULT 0,
+  primary_muscles          TEXT[]      NOT NULL DEFAULT '{}',
+  secondary_muscles        TEXT[]      NOT NULL DEFAULT '{}',
+  movement_pattern         TEXT        NOT NULL DEFAULT '',
+  equipment                TEXT        NOT NULL DEFAULT '',
+  muscle_source            TEXT        NOT NULL DEFAULT 'none',
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
+  CONSTRAINT exercises_pkey              PRIMARY KEY (id),
+  CONSTRAINT exercises_sets_ck           CHECK (sets > 0),
+  CONSTRAINT exercises_order_ck          CHECK (exercise_order > 0),
+  CONSTRAINT exercises_duration_ck       CHECK (planned_duration_minutes >= 0),
+  CONSTRAINT exercises_type_ck           CHECK (exercise_type IN ('strength', 'warmup')),
+  CONSTRAINT exercises_muscle_source_ck  CHECK (muscle_source IN ('auto', 'manual', 'none'))
+);
 
--- =============================================================================
--- 3. workout_sessions
--- =============================================================================
--- Change plan_id FK from implicit RESTRICT to ON DELETE CASCADE, and make it
--- nullable.  Deleting a plan now cascades to its sessions (and their set_logs).
--- Without CASCADE, plan deletion fails if any sessions reference the plan.
+-- plan_id ON DELETE CASCADE: deleting a plan removes all its sessions + logs.
+CREATE TABLE IF NOT EXISTS workout_sessions (
+  id               UUID        NOT NULL DEFAULT gen_random_uuid(),
+  user_id          UUID        NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  plan_id          UUID                 REFERENCES training_plans (id) ON DELETE CASCADE,
+  started_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at     TIMESTAMPTZ,
+  duration_seconds INTEGER,
+  notes            TEXT        NOT NULL DEFAULT '',
 
-DO $$
-BEGIN
-  -- Drop the old FK (auto-named by PostgreSQL)
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'workout_sessions'::REGCLASS
-      AND conname   = 'workout_sessions_plan_id_fkey'
-  ) THEN
-    ALTER TABLE workout_sessions DROP CONSTRAINT workout_sessions_plan_id_fkey;
-  END IF;
+  CONSTRAINT workout_sessions_pkey        PRIMARY KEY (id),
+  CONSTRAINT workout_sessions_duration_ck CHECK (duration_seconds IS NULL OR duration_seconds >= 0)
+);
 
-  -- Re-add with ON DELETE CASCADE (nullable so orphaned sessions are possible
-  -- if a plan is deleted independently of sessions in future)
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'workout_sessions'::REGCLASS
-      AND conname   = 'workout_sessions_plan_id_fk'
-  ) THEN
-    ALTER TABLE workout_sessions
-      ADD CONSTRAINT workout_sessions_plan_id_fk
-      FOREIGN KEY (plan_id) REFERENCES training_plans (id) ON DELETE CASCADE;
-  END IF;
-END $$;
+-- NUMERIC(7,2) avoids float precision drift; UNIQUE prevents duplicate inserts on retry.
+CREATE TABLE IF NOT EXISTS set_logs (
+  id             UUID         NOT NULL DEFAULT gen_random_uuid(),
+  session_id     UUID         NOT NULL REFERENCES workout_sessions (id) ON DELETE CASCADE,
+  exercise_id    UUID                  REFERENCES exercises (id) ON DELETE CASCADE,
+  set_number     INTEGER      NOT NULL,
+  weight_kg      NUMERIC(7,2),
+  reps_completed TEXT,
+  notes          TEXT         NOT NULL DEFAULT '',
+  logged_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
 
--- Drop NOT NULL on plan_id (was NOT NULL in schema.sql; new design allows NULL
--- so a session can survive plan deletion if the FK is later changed to SET NULL)
-ALTER TABLE workout_sessions ALTER COLUMN plan_id DROP NOT NULL;
-
--- Add duration_seconds CHECK
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'workout_sessions'::REGCLASS
-      AND conname   = 'workout_sessions_duration_ck'
-  ) THEN
-    ALTER TABLE workout_sessions
-      ADD CONSTRAINT workout_sessions_duration_ck
-      CHECK (duration_seconds IS NULL OR duration_seconds >= 0);
-  END IF;
-END $$;
+  CONSTRAINT set_logs_pkey       PRIMARY KEY (id),
+  CONSTRAINT set_logs_set_num_ck CHECK (set_number > 0),
+  CONSTRAINT set_logs_weight_ck  CHECK (weight_kg IS NULL OR weight_kg >= 0),
+  CONSTRAINT set_logs_unique     UNIQUE (session_id, exercise_id, set_number)
+);
 
 
 -- =============================================================================
--- 4. set_logs
+-- 2. INDEXES
 -- =============================================================================
 
--- 4a. exercise_id FK: change from implicit RESTRICT (NOT NULL) to ON DELETE CASCADE
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'set_logs'::REGCLASS
-      AND conname   = 'set_logs_exercise_id_fkey'
-  ) THEN
-    ALTER TABLE set_logs DROP CONSTRAINT set_logs_exercise_id_fkey;
-  END IF;
+CREATE INDEX IF NOT EXISTS idx_plans_user
+  ON training_plans (user_id);
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'set_logs'::REGCLASS
-      AND conname   = 'set_logs_exercise_id_fk'
-  ) THEN
-    ALTER TABLE set_logs
-      ADD CONSTRAINT set_logs_exercise_id_fk
-      FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON DELETE CASCADE;
-  END IF;
-END $$;
+CREATE INDEX IF NOT EXISTS idx_exercises_plan
+  ON exercises (plan_id);
 
--- exercise_id was NOT NULL in legacy schema; new design makes it nullable so
--- set_logs survive if their exercise is deleted (history is kept).
-ALTER TABLE set_logs ALTER COLUMN exercise_id DROP NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sessions_user
+  ON workout_sessions (user_id);
 
--- 4b. weight_kg: REAL → NUMERIC(7,2)
---   USING clause converts existing float values; the cast rounds to 2dp.
---   This is safe: REAL values fit easily inside NUMERIC(7,2) (max 99999.99).
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_name  = 'set_logs'
-      AND column_name = 'weight_kg'
-      AND data_type   = 'real'
-  ) THEN
-    ALTER TABLE set_logs
-      ALTER COLUMN weight_kg TYPE NUMERIC(7,2)
-      USING weight_kg::NUMERIC(7,2);
-  END IF;
-END $$;
+CREATE INDEX IF NOT EXISTS idx_sessions_plan
+  ON workout_sessions (plan_id);
 
--- 4c. logged_at: ensure NOT NULL (was DEFAULT NOW() but not NOT NULL in legacy)
-ALTER TABLE set_logs ALTER COLUMN logged_at SET NOT NULL;
-
--- 4d. CHECK constraints
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'set_logs'::REGCLASS AND conname = 'set_logs_set_num_ck') THEN
-    ALTER TABLE set_logs ADD CONSTRAINT set_logs_set_num_ck CHECK (set_number > 0);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = 'set_logs'::REGCLASS AND conname = 'set_logs_weight_ck') THEN
-    ALTER TABLE set_logs ADD CONSTRAINT set_logs_weight_ck  CHECK (weight_kg IS NULL OR weight_kg >= 0);
-  END IF;
-END $$;
-
--- 4e. UNIQUE constraint: prevents duplicate set inserts from retry storms
---   Before adding, remove any existing duplicate rows (keep the latest by logged_at).
---   This is safe because duplicate rows are always a data integrity bug.
-DELETE FROM set_logs
-WHERE exercise_id IS NOT NULL
-  AND id NOT IN (
-    SELECT DISTINCT ON (session_id, exercise_id, set_number) id
-    FROM   set_logs
-    WHERE  exercise_id IS NOT NULL
-    ORDER  BY session_id, exercise_id, set_number, logged_at DESC
-  );
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conrelid = 'set_logs'::REGCLASS
-      AND conname   = 'set_logs_unique'
-  ) THEN
-    ALTER TABLE set_logs
-      ADD CONSTRAINT set_logs_unique UNIQUE (session_id, exercise_id, set_number);
-  END IF;
-END $$;
-
-
--- =============================================================================
--- 5. Indexes
--- =============================================================================
-
--- Rename legacy idx_training_plans_user if it exists under the old name
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_training_plans_user') THEN
-    ALTER INDEX idx_training_plans_user RENAME TO idx_plans_user;
-  END IF;
-END $$;
-CREATE INDEX IF NOT EXISTS idx_plans_user ON training_plans (user_id);
-
--- exercise_type index (new — not in legacy schema)
-CREATE INDEX IF NOT EXISTS idx_exercises_type ON exercises (exercise_type);
-
--- Composite partial index: hottest read pattern (all analytics queries)
+-- Partial index: covers the hottest read path — completed sessions per user.
 CREATE INDEX IF NOT EXISTS idx_sessions_user_completed
   ON workout_sessions (user_id, completed_at DESC)
   WHERE completed_at IS NOT NULL;
 
--- Composite index for exercise-history and lift-progression joins
-CREATE INDEX IF NOT EXISTS idx_set_logs_exercise_session
-  ON set_logs (exercise_id, session_id);
+CREATE INDEX IF NOT EXISTS idx_set_logs_session
+  ON set_logs (session_id);
 
--- Remove the old muscle_source index (low-value, not used in any query)
-DROP INDEX IF EXISTS idx_exercises_muscle_source;
+CREATE INDEX IF NOT EXISTS idx_set_logs_exercise
+  ON set_logs (exercise_id);
 
 
 -- =============================================================================
--- 6. RLS policies
+-- 3. ROW LEVEL SECURITY
 -- =============================================================================
--- Replace the IN (subquery) policies with EXISTS (point-lookup) versions.
--- EXISTS stops at the first matching row; IN materialises the full subquery.
 
--- exercises
-DROP POLICY IF EXISTS "users_own_exercises" ON exercises;
-CREATE POLICY "users_own_exercises" ON exercises
+ALTER TABLE training_plans   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exercises         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workout_sessions  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE set_logs          ENABLE ROW LEVEL SECURITY;
+
+-- (SELECT auth.uid()) is evaluated once per query (InitPlan), not per row.
+CREATE POLICY "plans_all" ON training_plans
+  FOR ALL TO authenticated
+  USING     (user_id = (SELECT auth.uid()))
+  WITH CHECK (user_id = (SELECT auth.uid()));
+
+-- EXISTS on the PK is a single-row index seek.
+CREATE POLICY "exercises_all" ON exercises
   FOR ALL TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM training_plans
       WHERE  id      = exercises.plan_id
-        AND  user_id = auth.uid()
+        AND  user_id = (SELECT auth.uid())
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM training_plans
       WHERE  id      = exercises.plan_id
-        AND  user_id = auth.uid()
+        AND  user_id = (SELECT auth.uid())
     )
   );
 
--- set_logs
-DROP POLICY IF EXISTS "users_own_set_logs" ON set_logs;
-CREATE POLICY "users_own_set_logs" ON set_logs
+CREATE POLICY "sessions_all" ON workout_sessions
+  FOR ALL TO authenticated
+  USING     (user_id = (SELECT auth.uid()))
+  WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "set_logs_all" ON set_logs
   FOR ALL TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM workout_sessions
       WHERE  id      = set_logs.session_id
-        AND  user_id = auth.uid()
+        AND  user_id = (SELECT auth.uid())
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM workout_sessions
       WHERE  id      = set_logs.session_id
-        AND  user_id = auth.uid()
+        AND  user_id = (SELECT auth.uid())
     )
   );
 
 
 -- =============================================================================
--- 7. Triggers  (shared updated_at stamper)
+-- 4. TRIGGER FUNCTIONS + TRIGGERS
 -- =============================================================================
 
+-- Stamps updated_at = NOW() on every UPDATE.
+-- SECURITY INVOKER: runs as the calling user; no elevated privilege needed.
+-- search_path pinned to prevent search-path injection.
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = pg_catalog, public
 AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -311,19 +197,18 @@ $$;
 DROP TRIGGER IF EXISTS trg_training_plans_updated_at ON training_plans;
 CREATE TRIGGER trg_training_plans_updated_at
   BEFORE UPDATE ON training_plans
-  FOR EACH ROW
-  EXECUTE FUNCTION set_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 DROP TRIGGER IF EXISTS trg_exercises_updated_at ON exercises;
 CREATE TRIGGER trg_exercises_updated_at
   BEFORE UPDATE ON exercises
-  FOR EACH ROW
-  EXECUTE FUNCTION set_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- Auto-assign plan_order on INSERT (replaces frontend Date.now() which overflows INTEGER)
+-- Auto-assigns sequential plan_order on INSERT so the frontend never needs to send it.
 CREATE OR REPLACE FUNCTION set_plan_order()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = pg_catalog, public
 AS $$
 BEGIN
   NEW.plan_order := COALESCE(
@@ -337,16 +222,19 @@ $$;
 DROP TRIGGER IF EXISTS trg_training_plans_plan_order ON training_plans;
 CREATE TRIGGER trg_training_plans_plan_order
   BEFORE INSERT ON training_plans
-  FOR EACH ROW
-  EXECUTE FUNCTION set_plan_order();
+  FOR EACH ROW EXECUTE FUNCTION set_plan_order();
 
 
 -- =============================================================================
--- 8. RPC functions  (final authoritative versions — same as 004_functions.sql)
+-- 5. RPC FUNCTIONS
 -- =============================================================================
 
--- complete_workout ─────────────────────────────────────────────────────────
-
+-- -----------------------------------------------------------------------------
+-- complete_workout
+-- Atomically saves a finished workout session.
+-- Cleans up any partial set_logs from a previous failed attempt before
+-- re-inserting, so retries are always safe.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION complete_workout(
   p_session_id     UUID,
   p_notes          TEXT,
@@ -355,7 +243,7 @@ CREATE OR REPLACE FUNCTION complete_workout(
 )
 RETURNS VOID
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
@@ -403,12 +291,16 @@ END;
 $$;
 
 
--- get_workout_stats ─────────────────────────────────────────────────────────
-
+-- -----------------------------------------------------------------------------
+-- get_workout_stats
+-- Returns aggregate stats for the authenticated user.
+-- STABLE: read-only; planner can cache results within a query.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION get_workout_stats()
 RETURNS JSON
 LANGUAGE plpgsql
-SECURITY DEFINER
+STABLE
+SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
@@ -510,12 +402,15 @@ END;
 $$;
 
 
--- get_exercise_history ──────────────────────────────────────────────────────
-
+-- -----------------------------------------------------------------------------
+-- get_exercise_history
+-- Returns full session-by-session weight/reps history for one exercise.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION get_exercise_history(p_exercise_id UUID)
 RETURNS JSON
 LANGUAGE plpgsql
-SECURITY DEFINER
+STABLE
+SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
@@ -590,12 +485,16 @@ END;
 $$;
 
 
--- get_monthly_muscle_volume ─────────────────────────────────────────────────
-
+-- -----------------------------------------------------------------------------
+-- get_monthly_muscle_volume
+-- Weighted muscle volume for a given year/month.
+-- Primary muscles → 1.0 per set; secondary → 0.5 per set.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION get_monthly_muscle_volume(p_year INT, p_month INT)
 RETURNS JSON
 LANGUAGE plpgsql
-SECURITY DEFINER
+STABLE
+SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
@@ -648,12 +547,16 @@ END;
 $$;
 
 
--- get_lift_progression ──────────────────────────────────────────────────────
-
+-- -----------------------------------------------------------------------------
+-- get_lift_progression
+-- All strength exercises with ≥1 valid session weight, ordered by improvement.
+-- Includes sparkline array for the progress chart.
+-- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION get_lift_progression()
 RETURNS JSON
 LANGUAGE plpgsql
-SECURITY DEFINER
+STABLE
+SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
@@ -739,3 +642,58 @@ BEGIN
   RETURN result;
 END;
 $$;
+
+
+-- =============================================================================
+-- 6. PERMISSION GRANTS / REVOKES
+-- =============================================================================
+-- No function in this app is callable without a valid JWT.
+-- Trigger functions are internal and should never be called via RPC.
+
+REVOKE EXECUTE ON FUNCTION public.set_updated_at()                              FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.set_plan_order()                              FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.complete_workout(UUID, TEXT, INTEGER, JSONB)  FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_workout_stats()                           FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_exercise_history(UUID)                    FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_monthly_muscle_volume(INTEGER, INTEGER)   FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_lift_progression()                        FROM anon;
+
+
+-- =============================================================================
+-- 7. AUTOVACUUM TUNING
+-- =============================================================================
+-- Default threshold (50 + 0.2 * live_rows) is too high for small tables —
+-- training_plans with 3 live rows would need 50+ dead rows before autovacuum
+-- fires. Lower to 5% / min 10 rows so cleanup happens promptly.
+
+ALTER TABLE public.training_plans
+  SET (
+    autovacuum_vacuum_scale_factor   = 0.05,
+    autovacuum_vacuum_threshold      = 10,
+    autovacuum_analyze_scale_factor  = 0.05,
+    autovacuum_analyze_threshold     = 10
+  );
+
+ALTER TABLE public.exercises
+  SET (
+    autovacuum_vacuum_scale_factor   = 0.05,
+    autovacuum_vacuum_threshold      = 10,
+    autovacuum_analyze_scale_factor  = 0.05,
+    autovacuum_analyze_threshold     = 10
+  );
+
+ALTER TABLE public.workout_sessions
+  SET (
+    autovacuum_vacuum_scale_factor   = 0.05,
+    autovacuum_vacuum_threshold      = 10,
+    autovacuum_analyze_scale_factor  = 0.05,
+    autovacuum_analyze_threshold     = 10
+  );
+
+ALTER TABLE public.set_logs
+  SET (
+    autovacuum_vacuum_scale_factor   = 0.05,
+    autovacuum_vacuum_threshold      = 10,
+    autovacuum_analyze_scale_factor  = 0.05,
+    autovacuum_analyze_threshold     = 10
+  );

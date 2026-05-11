@@ -1,4 +1,5 @@
 import React from 'react';
+import { ApexMark } from '../../../components/ApexMark';
 import { dailyQuote } from '../../../lib/utils';
 
 interface DashboardHeaderProps {
@@ -18,6 +19,26 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ name }) => {
 
   return (
     <div className="px-5 pt-[20px] pb-5">
+      {/* Brand wordmark */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 20,
+      }}>
+        <ApexMark size={22} color="var(--ink)" accentColor="var(--lime)" />
+        <span style={{
+          fontFamily: 'var(--sans)',
+          fontWeight: 600,
+          fontSize: 17,
+          letterSpacing: '-0.04em',
+          color: 'var(--ink)',
+          lineHeight: 1,
+        }}>
+          Fit<span style={{ fontWeight: 300, opacity: 0.45 }}>Track</span>
+        </span>
+      </div>
+
       {/* Greeting */}
       <p style={{
         margin: '0 0 2px',

@@ -60,8 +60,8 @@ export default function AuthPage() {
   return (
     <div className="ft-screen flex flex-col min-h-dvh bg-[var(--paper-2)]">
 
-      {/* Brand section */}
-      <div className="flex-shrink-0 bg-[var(--ink)] px-8 pt-16 pb-12 flex flex-col items-center text-center">
+      {/* Brand section — always ink-dark regardless of theme */}
+      <div className="flex-shrink-0 px-8 pt-16 pb-12 flex flex-col items-center text-center" style={{ background: '#0B0C0E' }}>
         {/* Apex app icon tile */}
         <div style={{
           width: 72, height: 72,

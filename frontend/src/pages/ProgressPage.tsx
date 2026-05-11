@@ -431,7 +431,7 @@ export default function ProgressPage() {
                 {c.day !== null && (
                   <span style={{
                     fontFamily: 'var(--mono)', fontSize: 11,
-                    color: c.on ? 'var(--paper)' : c.future ? 'var(--paper-3)' : 'var(--ink-3)',
+                    color: c.on ? 'var(--paper)' : c.future ? 'var(--ink-3)' : 'var(--ink-2)',
                     fontWeight: c.today ? 700 : 400,
                   }}>{c.day}</span>
                 )}

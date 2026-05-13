@@ -22,10 +22,9 @@ const ChartIcon = ({ active }: { active: boolean }) => (
 const CoachIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={active ? 2.2 : 1.6} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
-    <line x1="9" y1="21" x2="15" y2="21"/>
-    <line x1="10" y1="17" x2="10" y2="21"/>
-    <line x1="14" y1="17" x2="14" y2="21"/>
+    <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
+    <path d="M9 18h6"/>
+    <path d="M10 22h4"/>
   </svg>
 );
 

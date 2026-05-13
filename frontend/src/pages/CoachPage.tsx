@@ -342,31 +342,33 @@ function insightColors(type: Insight['type']) {
   switch (type) {
     case 'pr':
       return {
-        accent: 'var(--lime)',
-        accentText: 'var(--lime-ink)',
-        accentBg: 'var(--lime-soft)',
-        border: 'var(--lime)',
+        accent:     'var(--lime)',
+        // lime-soft-text flips: dark in light mode, bright in dark mode
+        accentText: 'var(--lime-soft-text)',
+        accentBg:   'var(--lime-soft)',
+        border:     'var(--lime)',
       };
     case 'positive':
       return {
-        accent: 'var(--positive)',
+        accent:     'var(--positive)',
         accentText: 'var(--positive)',
-        accentBg: 'var(--positive-bg)',
-        border: 'var(--positive)',
+        accentBg:   'var(--positive-bg)',
+        border:     'var(--positive)',
       };
     case 'warning':
       return {
-        accent: 'var(--warning)',
+        accent:     'var(--warning)',
         accentText: 'var(--warning)',
-        accentBg: 'var(--warning-soft)',
-        border: 'var(--warning)',
+        accentBg:   'var(--warning-soft)',
+        border:     'var(--warning)',
       };
     default:
       return {
-        accent: 'var(--ink-3)',
-        accentText: 'var(--ink-3)',
-        accentBg: 'var(--paper-2)',
-        border: 'var(--border)',
+        accent:     'var(--ink-3)',
+        accentText: 'var(--ink-2)',
+        // paper-3 is lighter than paper-2 in dark mode (0.27 vs 0.11)
+        accentBg:   'var(--paper-3)',
+        border:     'var(--hair-dark)',
       };
   }
 }
@@ -510,15 +512,15 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                 <span style={{
                   fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
                   letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: 'var(--ink-4)', display: 'block', marginBottom: 5,
+                  color: 'var(--ink-3)', display: 'block', marginBottom: 5,
                 }}>
                   DETECTED BECAUSE
                 </span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {insight.signals.map((s, i) => (
                     <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                      <span style={{ color: cols.accentText, fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>◆</span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{s}</span>
+                      <span style={{ color: cols.accent, fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>◆</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{s}</span>
                     </div>
                   ))}
                 </div>
@@ -539,7 +541,7 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                   {insight.causes.map((c, i) => (
                     <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                       <span style={{ color: 'var(--warning)', fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>?</span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{c}</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{c}</span>
                     </div>
                   ))}
                 </div>
@@ -560,7 +562,7 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                   {insight.suggestions.map((s, i) => (
                     <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                       <span style={{ color: 'var(--ink-3)', fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>→</span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{s}</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{s}</span>
                     </div>
                   ))}
                 </div>

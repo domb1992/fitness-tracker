@@ -4,59 +4,244 @@ import { useTranslation } from 'react-i18next';
 import { exercisesApi, sessionsApi } from '../api/client';
 import { useUIStore } from '../store/store';
 import { computeAnalytics } from '../lib/analyticsEngine';
-import type { AnalyticsResult, Insight, InsightCategory } from '../types';
+import type { AnalyticsResult, Insight, InsightCategory, ScoreBreakdown } from '../types';
 
-// ─── Score ring ────────────────────────────────────────────────────────────────
+// ─── Score ring (small, inline) ───────────────────────────────────────────────
 
-function ScoreRing({
-  score,
-  label,
-  color,
-  size = 80,
-}: {
-  score: number;
-  label: string;
-  color: string;
-  size?: number;
-}) {
-  const r    = 28;
+function ScoreRingSmall({ score, color }: { score: number; color: string }) {
+  const r    = 20;
   const circ = 2 * Math.PI * r;
   const pct  = Math.max(0, Math.min(1, score / 100));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      <div style={{ position: 'relative', width: size, height: size }}>
-        <svg width={size} height={size} viewBox="0 0 76 76" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={38} cy={38} r={r} fill="none"
-            stroke="var(--paper-3)" strokeWidth={6} />
-          <circle cx={38} cy={38} r={r} fill="none"
-            stroke={color} strokeWidth={6}
-            strokeDasharray={circ}
-            strokeDashoffset={circ * (1 - pct)}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(0.34,1.56,0.64,1)' }}
-          />
-        </svg>
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
+    <div style={{ position: 'relative', width: 52, height: 52, flexShrink: 0 }}>
+      <svg width={52} height={52} viewBox="0 0 52 52" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={26} cy={26} r={r} fill="none"
+          stroke="var(--paper-3)" strokeWidth={5} />
+        <circle cx={26} cy={26} r={r} fill="none"
+          stroke={color} strokeWidth={5}
+          strokeDasharray={circ}
+          strokeDashoffset={circ * (1 - pct)}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(0.34,1.56,0.64,1)' }}
+        />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 15, fontWeight: 700,
+          letterSpacing: '-0.04em', color: 'var(--ink)',
         }}>
-          <span style={{
-            fontFamily: 'var(--mono)', fontSize: 18, fontWeight: 700,
-            letterSpacing: '-0.04em', color: 'var(--ink)',
-          }}>
-            {score}
-          </span>
-        </div>
+          {score}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Score factor bar ──────────────────────────────────────────────────────────
+
+function FactorBar({ label, description, earned, max, positive }: {
+  label: string; description: string;
+  earned: number; max: number; positive: boolean;
+}) {
+  const pct = max > 0 ? Math.min(1, earned / max) : 0;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+          {label}
+        </span>
+        <span style={{
+          fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+          color: positive ? 'var(--positive)' : 'var(--warning)',
+          letterSpacing: '0.04em',
+        }}>
+          {earned}/{max} pts
+        </span>
+      </div>
+      <div style={{ height: 5, borderRadius: 99, background: 'var(--paper-3)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 99,
+          width: `${pct * 100}%`,
+          background: positive ? 'var(--positive)' : 'var(--warning)',
+          transition: 'width 0.6s var(--ease)',
+        }} />
       </div>
       <span style={{
-        fontFamily: 'var(--mono)', fontSize: 9,
-        letterSpacing: '0.07em', textTransform: 'uppercase',
-        color: 'var(--ink-3)', fontWeight: 500,
+        fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--ink-4)', lineHeight: 1.4,
       }}>
-        {label}
+        {description}
       </span>
+    </div>
+  );
+}
+
+// ─── Score card (expandable) ───────────────────────────────────────────────────
+
+function ScoreCard({ bd, label, color, icon }: {
+  bd: ScoreBreakdown;
+  label: string;
+  color: string;
+  icon: React.ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const trendColor =
+    bd.trendDirection === 'up'   ? 'var(--positive)' :
+    bd.trendDirection === 'down' ? 'var(--warning)'  : 'var(--ink-3)';
+
+  return (
+    <div
+      className="card"
+      style={{ borderRadius: 'var(--r-2)', overflow: 'hidden', cursor: 'pointer' }}
+      onClick={() => setExpanded(v => !v)}
+    >
+      {/* ── Collapsed header ── */}
+      <div style={{ padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <ScoreRingSmall score={bd.score} color={color} />
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <span style={{ color, flexShrink: 0 }}>{icon}</span>
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+              letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--ink-3)',
+            }}>
+              {label}
+            </span>
+          </div>
+          <p style={{
+            margin: 0, fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.4,
+            letterSpacing: '-0.005em',
+          }}>
+            {bd.summary}
+          </p>
+          {bd.trendText && (
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 9, color: trendColor,
+              letterSpacing: '0.04em', marginTop: 3, display: 'block',
+            }}>
+              {bd.trendText}
+            </span>
+          )}
+        </div>
+
+        {/* Expand chevron */}
+        <svg
+          width={14} height={14} viewBox="0 0 24 24"
+          fill="none" stroke="var(--ink-4)" strokeWidth={2}
+          strokeLinecap="round" strokeLinejoin="round"
+          style={{
+            flexShrink: 0,
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s var(--ease)',
+          }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </div>
+
+      {/* ── Expanded breakdown ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateRows: expanded ? '1fr' : '0fr',
+        transition: 'grid-template-rows 0.25s var(--ease)',
+        overflow: 'hidden',
+      }}>
+        <div style={{ minHeight: 0 }}>
+          <div
+            style={{ padding: '0 14px 16px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ height: 1, background: 'var(--hair)', marginBottom: 14 }} />
+
+            {/* Factor bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+              {bd.factors.map((f, i) => (
+                <FactorBar key={i} {...f} />
+              ))}
+            </div>
+
+            {/* Positives */}
+            {bd.positives.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--positive)', display: 'block', marginBottom: 6,
+                }}>
+                  WORKING FOR YOU
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {bd.positives.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--positive)', fontSize: 10, lineHeight: 1.5, flexShrink: 0 }}>✓</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{p}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Negatives */}
+            {bd.negatives.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--warning)', display: 'block', marginBottom: 6,
+                }}>
+                  HOLDING YOU BACK
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {bd.negatives.map((n, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--warning)', fontSize: 10, lineHeight: 1.5, flexShrink: 0 }}>✗</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{n}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Suggestions */}
+            {bd.suggestions.length > 0 && (
+              <div style={{ marginBottom: bd.dataNote ? 10 : 0 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--ink-3)', display: 'block', marginBottom: 6,
+                }}>
+                  HOW TO IMPROVE
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {bd.suggestions.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--ink-3)', fontSize: 10, lineHeight: 1.5, flexShrink: 0 }}>→</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-2)', lineHeight: 1.45 }}>{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Data note */}
+            {bd.dataNote && (
+              <p style={{
+                margin: bd.suggestions.length > 0 ? '8px 0 0' : '0',
+                fontFamily: 'var(--mono)', fontSize: 9,
+                color: 'var(--ink-4)', lineHeight: 1.5,
+                borderTop: '1px solid var(--hair)', paddingTop: 8,
+              }}>
+                {bd.dataNote}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -186,7 +371,7 @@ function insightColors(type: Insight['type']) {
   }
 }
 
-// ─── Confidence dot ────────────────────────────────────────────────────────────
+// ─── Confidence dots ───────────────────────────────────────────────────────────
 
 function ConfidenceDots({ level }: { level: Insight['confidence'] }) {
   const filled = level === 'high' ? 3 : level === 'medium' ? 2 : 1;
@@ -209,6 +394,13 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
   const [expanded, setExpanded] = useState(false);
   const cols = insightColors(insight.type);
 
+  const hasDetails = !!(
+    insight.signals?.length ||
+    insight.causes?.length ||
+    insight.suggestions?.length ||
+    insight.confidenceReason
+  );
+
   return (
     <div
       className="card"
@@ -220,9 +412,8 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
       }}
       onClick={() => setExpanded(v => !v)}
     >
-      {/* Header row */}
+      {/* ── Header row ── */}
       <div style={{ padding: '14px 14px 0', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        {/* Category icon */}
         <div style={{
           width: 30, height: 30, borderRadius: 'var(--r-xs)',
           background: cols.accentBg,
@@ -233,7 +424,6 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Type badge + trend */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -251,12 +441,24 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                 {insight.timeframe}
               </span>
             )}
-            <div style={{ marginLeft: 'auto' }}>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
               <ConfidenceDots level={insight.confidence} />
+              {hasDetails && (
+                <svg
+                  width={14} height={14} viewBox="0 0 24 24"
+                  fill="none" stroke="var(--ink-4)" strokeWidth={2}
+                  strokeLinecap="round" strokeLinejoin="round"
+                  style={{
+                    transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s var(--ease)',
+                  }}
+                >
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              )}
             </div>
           </div>
 
-          {/* Title */}
           <div style={{
             fontSize: 13, fontWeight: 700, lineHeight: 1.3,
             letterSpacing: '-0.01em', color: 'var(--ink)',
@@ -264,23 +466,9 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
             {insight.title}
           </div>
         </div>
-
-        {/* Expand chevron */}
-        <svg
-          width={14} height={14} viewBox="0 0 24 24"
-          fill="none" stroke="var(--ink-4)" strokeWidth={2}
-          strokeLinecap="round" strokeLinejoin="round"
-          style={{
-            flexShrink: 0, marginTop: 4,
-            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s var(--ease)',
-          }}
-        >
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
       </div>
 
-      {/* Metric chip */}
+      {/* ── Metric chip ── */}
       {insight.metric && (
         <div style={{ padding: '8px 14px 0', paddingLeft: 58 }}>
           <span style={{
@@ -296,7 +484,7 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
         </div>
       )}
 
-      {/* Expanded body */}
+      {/* ── Expanded body ── */}
       <div style={{
         display: 'grid',
         gridTemplateRows: expanded ? '1fr' : '0fr',
@@ -304,16 +492,97 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
         overflow: 'hidden',
       }}>
         <div style={{ minHeight: 0 }}>
-          <div style={{ padding: '10px 14px 14px', paddingLeft: 58 }}>
+          <div
+            style={{ padding: '10px 14px 14px', paddingLeft: 58 }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Body text */}
             <p style={{
-              margin: 0, fontSize: 13, lineHeight: 1.55,
+              margin: '0 0 10px', fontSize: 13, lineHeight: 1.55,
               color: 'var(--ink-2)', letterSpacing: '-0.005em',
             }}>
               {insight.body}
             </p>
+
+            {/* Signals */}
+            {insight.signals && insight.signals.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--ink-4)', display: 'block', marginBottom: 5,
+                }}>
+                  DETECTED BECAUSE
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {insight.signals.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                      <span style={{ color: cols.accentText, fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>◆</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Causes */}
+            {insight.causes && insight.causes.length > 0 && (
+              <div style={{ marginBottom: 10 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--warning)', display: 'block', marginBottom: 5,
+                }}>
+                  POSSIBLE REASONS
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {insight.causes.map((c, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--warning)', fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>?</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{c}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Suggestions */}
+            {insight.suggestions && insight.suggestions.length > 0 && (
+              <div style={{ marginBottom: insight.confidenceReason ? 10 : 0 }}>
+                <span style={{
+                  fontFamily: 'var(--mono)', fontSize: 8, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--ink-3)', display: 'block', marginBottom: 5,
+                }}>
+                  NEXT STEPS
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {insight.suggestions.map((s, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                      <span style={{ color: 'var(--ink-3)', fontSize: 9, lineHeight: 1.6, flexShrink: 0 }}>→</span>
+                      <span style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.45 }}>{s}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Confidence reason */}
+            {insight.confidenceReason && (
+              <p style={{
+                margin: 0, fontFamily: 'var(--mono)', fontSize: 9,
+                color: 'var(--ink-4)', lineHeight: 1.5,
+                borderTop: '1px solid var(--hair)', paddingTop: 8,
+                marginTop: 8,
+              }}>
+                Confidence: {insight.confidenceReason}
+              </p>
+            )}
+
+            {/* Exercise link */}
             {insight.exerciseId && (
               <button
-                onClick={(e) => { e.stopPropagation(); onNavigate(insight.exerciseId!); }}
+                onClick={() => onNavigate(insight.exerciseId!)}
                 style={{
                   marginTop: 10,
                   display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -362,17 +631,13 @@ function EmptyState({ isInsufficient }: { isInsufficient: boolean }) {
         margin: '0 0 6px', fontSize: 14, fontWeight: 700,
         letterSpacing: '-0.01em', color: 'var(--ink)',
       }}>
-        {isInsufficient
-          ? t('coach.notEnoughData')
-          : t('coach.noInsights')}
+        {isInsufficient ? t('coach.notEnoughData') : t('coach.noInsights')}
       </p>
       <p style={{
         margin: 0, fontFamily: 'var(--mono)', fontSize: 10,
         letterSpacing: '0.04em', color: 'var(--ink-4)', lineHeight: 1.6,
       }}>
-        {isInsufficient
-          ? t('coach.notEnoughDataDesc')
-          : t('coach.noInsightsDesc')}
+        {isInsufficient ? t('coach.notEnoughDataDesc') : t('coach.noInsightsDesc')}
       </p>
     </div>
   );
@@ -393,15 +658,12 @@ function WeeklyBars({ weeklyData }: { weeklyData: { week: string; count: number 
   const maxCount = Math.max(...last8.map(d => d.count), 1);
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-end', gap: 4,
-      height: 36, padding: '0 2px',
-    }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 36, padding: '0 2px' }}>
       {last8.map((d, i) => {
         const pct = d.count / maxCount;
         const isLast = i === last8.length - 1;
         return (
-          <div key={d.week} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <div key={d.week} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{
               width: '100%', height: Math.round(pct * 28) + 4,
               borderRadius: 3,
@@ -430,25 +692,54 @@ function QualityBadge({ quality }: { quality: AnalyticsResult['dataQuality'] }) 
   return (
     <span style={{
       fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 600,
-      letterSpacing: '0.06em', textTransform: 'uppercase',
-      color,
+      letterSpacing: '0.06em', textTransform: 'uppercase', color,
     }}>
       {label}
     </span>
   );
 }
 
+// ─── Score section icons ───────────────────────────────────────────────────────
+
+const ConsistencyIcon = () => (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+
+const VolumeIcon = () => (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"/>
+    <line x1="12" y1="20" x2="12" y2="4"/>
+    <line x1="6" y1="20" x2="6" y2="14"/>
+  </svg>
+);
+
+const BalanceIcon = () => (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="3" x2="12" y2="21"/>
+    <path d="M3 6h9l-3 6H3z"/>
+    <path d="M21 18h-9l3-6h9z"/>
+  </svg>
+);
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function CoachPage() {
-  const navigate    = useNavigate();
-  const { t }       = useTranslation();
-  const { locale }  = useUIStore();
+  const navigate   = useNavigate();
+  const { t }      = useTranslation();
+  const { locale } = useUIStore();
 
-  const [result,   setResult]   = useState<AnalyticsResult | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(false);
-  const [filter,   setFilter]   = useState<FilterCat>('all');
+  const [result,     setResult]     = useState<AnalyticsResult | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(false);
+  const [filter,     setFilter]     = useState<FilterCat>('all');
   const [weeklyData, setWeeklyData] = useState<{ week: string; count: number }[]>([]);
 
   const load = useCallback(async () => {
@@ -521,10 +812,10 @@ export default function CoachPage() {
     );
   }
 
-  const scores = result?.scores;
-  const quality = result?.dataQuality ?? 'insufficient';
+  const quality      = result?.dataQuality ?? 'insufficient';
   const isInsufficient = quality === 'insufficient';
-  const lastUpdated = result?.lastUpdated;
+  const lastUpdated  = result?.lastUpdated;
+  const breakdowns   = result?.breakdowns;
 
   return (
     <div className="ft-screen" style={{ paddingBottom: 'var(--nav-safe)' }}>
@@ -551,61 +842,59 @@ export default function CoachPage() {
           <QualityBadge quality={quality} />
           {lastUpdated && (
             <span className="mono-tag" style={{ color: 'var(--ink-4)', fontSize: 9 }}>
-              · {t('coach.updated')} {lastUpdated.toLocaleTimeString(locale === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+              · {t('coach.updated')} {lastUpdated.toLocaleTimeString(
+                locale === 'de' ? 'de-DE' : 'en-US',
+                { hour: '2-digit', minute: '2-digit' }
+              )}
             </span>
           )}
         </div>
       </div>
 
       {/* ── Score cards ── */}
-      {!isInsufficient && scores && (
-        <div style={{ padding: '16px 20px 20px' }}>
-          <div className="surface" style={{ padding: '20px 16px' }}>
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 12, alignItems: 'start',
-            }}>
-              <ScoreRing
-                score={scores.consistency}
-                label={t('coach.scoreConsistency')}
-                color="var(--positive)"
-              />
-              <ScoreRing
-                score={scores.volume}
-                label={t('coach.scoreVolume')}
-                color="var(--lime)"
-                size={88}
-              />
-              <ScoreRing
-                score={scores.balance}
-                label={t('coach.scoreBalance')}
-                color="var(--clay)"
-              />
-            </div>
+      {!isInsufficient && breakdowns && (
+        <div style={{ padding: '12px 20px 4px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ScoreCard
+            bd={breakdowns.consistency}
+            label={t('coach.scoreConsistency')}
+            color="var(--positive)"
+            icon={<ConsistencyIcon />}
+          />
+          <ScoreCard
+            bd={breakdowns.volume}
+            label={t('coach.scoreVolume')}
+            color="var(--lime)"
+            icon={<VolumeIcon />}
+          />
+          <ScoreCard
+            bd={breakdowns.balance}
+            label={t('coach.scoreBalance')}
+            color="var(--clay)"
+            icon={<BalanceIcon />}
+          />
 
-            {/* Weekly bars */}
-            {weeklyData.length >= 3 && (
-              <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--hair)' }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'center', marginBottom: 8,
-                }}>
-                  <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
-                    {t('coach.weeklyActivity')}
-                  </span>
-                  <span className="mono-tag" style={{ color: 'var(--ink-3)', fontSize: 9 }}>
-                    {t('coach.last8Weeks')}
-                  </span>
-                </div>
-                <WeeklyBars weeklyData={weeklyData} />
+          {/* Weekly bars */}
+          {weeklyData.length >= 3 && (
+            <div className="surface" style={{ padding: '14px 14px' }}>
+              <div style={{
+                display: 'flex', justifyContent: 'space-between',
+                alignItems: 'center', marginBottom: 8,
+              }}>
+                <span className="mono-tag" style={{ color: 'var(--ink-4)' }}>
+                  {t('coach.weeklyActivity')}
+                </span>
+                <span className="mono-tag" style={{ color: 'var(--ink-3)', fontSize: 9 }}>
+                  {t('coach.last8Weeks')}
+                </span>
               </div>
-            )}
-          </div>
+              <WeeklyBars weeklyData={weeklyData} />
+            </div>
+          )}
         </div>
       )}
 
       {/* ── Insights section ── */}
-      <div style={{ padding: '0 20px 8px' }}>
+      <div style={{ padding: '16px 20px 8px' }}>
         <div style={{
           display: 'flex', alignItems: 'center',
           justifyContent: 'space-between', marginBottom: 12,
@@ -674,10 +963,7 @@ export default function CoachPage() {
           </span>
         </div>
       ) : (
-        <div style={{
-          padding: '0 20px',
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
+        <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filteredInsights.map(insight => (
             <InsightCard
               key={insight.id}
@@ -688,7 +974,6 @@ export default function CoachPage() {
         </div>
       )}
 
-      {/* ── Bottom spacer ── */}
       <div style={{ height: 24 }} />
     </div>
   );

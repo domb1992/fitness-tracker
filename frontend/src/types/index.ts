@@ -170,6 +170,10 @@ export interface Insight {
   category: InsightCategory;
   title: string;
   body: string;
+  signals?: string[];           // data points that triggered this insight
+  causes?: string[];            // possible reasons (for warnings)
+  suggestions?: string[];       // actionable next steps
+  confidenceReason?: string;    // why this confidence level
   metric?: string;
   trend: InsightTrend;
   confidence: InsightConfidence;
@@ -178,17 +182,45 @@ export interface Insight {
   priority: number;
 }
 
+// ─── Score breakdown ──────────────────────────────────────────────────────────
+
+export interface ScoreFactor {
+  label: string;
+  description: string;  // current value as human-readable sentence
+  earned: number;       // points earned for this factor
+  max: number;          // max possible points
+  positive: boolean;    // is this factor currently working in user's favour
+}
+
+export interface ScoreBreakdown {
+  score: number;
+  summary: string;      // one-liner shown collapsed
+  factors: ScoreFactor[];
+  positives: string[];
+  negatives: string[];
+  suggestions: string[];
+  trendDirection: InsightTrend;
+  trendText: string;
+  dataNote: string;
+}
+
 export interface AnalyticsScores {
-  readiness:   number;
   consistency: number;
   volume:      number;
   balance:     number;
+}
+
+export interface AnalyticsBreakdowns {
+  consistency: ScoreBreakdown;
+  volume:      ScoreBreakdown;
+  balance:     ScoreBreakdown;
 }
 
 export type DataQuality = 'insufficient' | 'limited' | 'good' | 'excellent';
 
 export interface AnalyticsResult {
   scores:      AnalyticsScores;
+  breakdowns:  AnalyticsBreakdowns;
   insights:    Insight[];
   lastUpdated: Date;
   dataQuality: DataQuality;

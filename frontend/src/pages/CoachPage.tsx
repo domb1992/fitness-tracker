@@ -443,9 +443,8 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                 {insight.timeframe}
               </span>
             )}
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ConfidenceDots level={insight.confidence} />
-              {hasDetails && (
+            {hasDetails && (
+              <div style={{ marginLeft: 'auto' }}>
                 <svg
                   width={14} height={14} viewBox="0 0 24 24"
                   fill="none" stroke="var(--ink-4)" strokeWidth={2}
@@ -457,8 +456,8 @@ function InsightCard({ insight, onNavigate }: { insight: Insight; onNavigate: (i
                 >
                   <path d="M6 9l6 6 6-6"/>
                 </svg>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div style={{

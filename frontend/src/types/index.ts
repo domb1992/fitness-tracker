@@ -130,3 +130,66 @@ export interface ActiveExercise {
   exercise: Exercise;
   sets: ActiveSetLog[];
 }
+
+// ─── Performance Coach / Analytics ───────────────────────────────────────────
+
+export interface CoachSession {
+  id: string;
+  completed_at: string;
+  duration_seconds: number | null;
+  plan_id: string | null;
+  muscles: string[];
+}
+
+export interface CoachExerciseSession {
+  exercise_id: string;
+  exercise_name: string;
+  primary_muscles: string[];
+  secondary_muscles: string[];
+  movement_pattern: string;
+  completed_at: string;
+  avg_weight: number | null;
+  max_weight: number | null;
+  total_sets: number;
+  total_volume: number;
+}
+
+export interface CoachData {
+  sessions: CoachSession[];
+  exercise_sessions: CoachExerciseSession[];
+}
+
+export type InsightType       = 'positive' | 'warning' | 'info' | 'pr';
+export type InsightCategory   = 'progression' | 'consistency' | 'volume' | 'recovery' | 'balance' | 'pr' | 'coaching';
+export type InsightTrend      = 'up' | 'down' | 'neutral';
+export type InsightConfidence = 'high' | 'medium' | 'low';
+
+export interface Insight {
+  id: string;
+  type: InsightType;
+  category: InsightCategory;
+  title: string;
+  body: string;
+  metric?: string;
+  trend: InsightTrend;
+  confidence: InsightConfidence;
+  timeframe?: string;
+  exerciseId?: string;
+  priority: number;
+}
+
+export interface AnalyticsScores {
+  readiness:   number;
+  consistency: number;
+  volume:      number;
+  balance:     number;
+}
+
+export type DataQuality = 'insufficient' | 'limited' | 'good' | 'excellent';
+
+export interface AnalyticsResult {
+  scores:      AnalyticsScores;
+  insights:    Insight[];
+  lastUpdated: Date;
+  dataQuality: DataQuality;
+}

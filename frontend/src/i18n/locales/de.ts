@@ -30,6 +30,7 @@ const de: Translations = {
   nav: {
     home: 'Start',
     progress: 'Fortschritt',
+    coach: 'Coach',
     profile: 'Profil',
   },
 
@@ -335,6 +336,41 @@ const de: Translations = {
     reps: 'WDH',
     noWeight: 'Kein Gewicht',
     noData: 'Noch keine Daten — schließe ein Workout ab um Fortschritt zu sehen',
+  },
+
+  // ─── Performance Coach ─────────────────────────────────────────────────────
+  coach: {
+    pageLabel: 'Performance Coach',
+    heading: 'Coach',
+    refresh: 'Einblicke aktualisieren',
+    retry: 'Nochmal versuchen',
+    updated: 'Aktualisiert',
+    insights: 'KI-Einblicke',
+    insightCount: '{{count}} Einblicke',
+    insightCount_plural: '{{count}} Einblicke',
+    noInsights: 'Noch keine Einblicke',
+    noInsightsDesc: 'Alle Werte sehen ausgeglichen aus — absolviere mehr Workouts für detailliertes Coaching.',
+    noInsightsInCategory: 'Keine Einblicke in dieser Kategorie',
+    notEnoughData: 'Noch nicht genug Daten',
+    notEnoughDataDesc: 'Schließe mindestens 3 Workouts ab, um deinen Performance Coach freizuschalten.',
+    scoreConsistency: 'Konsistenz',
+    scoreVolume: 'Volumen',
+    scoreBalance: 'Balance',
+    weeklyActivity: 'Wöchentliche Einheiten',
+    last8Weeks: 'letzte 8 Wochen',
+    qualityInsufficient: '● Daten werden gesammelt',
+    qualityLimited: '● Begrenzte Daten',
+    qualityGood: '● Gute Datenlage',
+    qualityExcellent: '● Exzellente Datenlage',
+    filter: {
+      all: 'Alle',
+      pr: 'PRs',
+      progression: 'Fortschritt',
+      consistency: 'Konsistenz',
+      volume: 'Volumen',
+      balance: 'Balance',
+      recovery: 'Erholung',
+    },
   },
 
   // ─── Errors ────────────────────────────────────────────────────────────────

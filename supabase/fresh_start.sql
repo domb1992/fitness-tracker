@@ -644,6 +644,104 @@ END;
 $$;
 
 
+-- -----------------------------------------------------------------------------
+-- get_coach_data
+-- Returns comprehensive analytics data for the Performance Coach feature.
+-- Two result sets:
+--   sessions         → every completed session + distinct primary muscles
+--   exercise_sessions → per-exercise per-session aggregates (last 6 months)
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION get_coach_data()
+RETURNS JSON
+LANGUAGE plpgsql
+STABLE
+SECURITY INVOKER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid  UUID := auth.uid();
+  result JSON;
+BEGIN
+  SELECT json_build_object(
+
+    -- All completed sessions with their primary muscles list
+    'sessions', COALESCE((
+      SELECT json_agg(row_data ORDER BY (row_data ->> 'completed_at') DESC)
+      FROM (
+        SELECT json_build_object(
+          'id',               ws.id::TEXT,
+          'completed_at',     ws.completed_at,
+          'duration_seconds', ws.duration_seconds,
+          'plan_id',          ws.plan_id::TEXT,
+          'muscles', COALESCE(
+            (
+              SELECT array_agg(DISTINCT m ORDER BY m)
+              FROM (
+                SELECT UNNEST(e.primary_muscles) AS m
+                FROM   set_logs sl2
+                JOIN   exercises e ON sl2.exercise_id = e.id
+                WHERE  sl2.session_id     = ws.id
+                  AND  e.exercise_type    = 'strength'
+                  AND  sl2.weight_kg      IS NOT NULL
+              ) msub
+              WHERE m IS NOT NULL AND m <> ''
+            ),
+            ARRAY[]::TEXT[]
+          )
+        ) AS row_data
+        FROM workout_sessions ws
+        WHERE ws.user_id      = v_uid
+          AND ws.completed_at IS NOT NULL
+        ORDER BY ws.completed_at DESC
+        LIMIT 200
+      ) t
+    ), '[]'::JSON),
+
+    -- Per-exercise per-session aggregates for volume & balance analysis
+    'exercise_sessions', COALESCE((
+      SELECT json_agg(row_data ORDER BY (row_data ->> 'completed_at') DESC)
+      FROM (
+        SELECT json_build_object(
+          'exercise_id',       e.id::TEXT,
+          'exercise_name',     e.name,
+          'primary_muscles',   e.primary_muscles,
+          'secondary_muscles', e.secondary_muscles,
+          'movement_pattern',  e.movement_pattern,
+          'completed_at',      ws.completed_at,
+          'avg_weight',        ROUND(AVG(sl.weight_kg)::NUMERIC, 2),
+          'max_weight',        MAX(sl.weight_kg),
+          'total_sets',        COUNT(sl.id)::INT,
+          'total_volume',      ROUND(SUM(
+            COALESCE(sl.weight_kg, 0) *
+            CASE WHEN sl.reps_completed ~ '^[0-9]+(\.[0-9]+)?$'
+                 THEN sl.reps_completed::NUMERIC
+                 ELSE 0
+            END
+          )::NUMERIC, 1)
+        ) AS row_data
+        FROM   set_logs         sl
+        JOIN   workout_sessions ws ON sl.session_id  = ws.id
+        JOIN   exercises        e  ON sl.exercise_id = e.id
+        JOIN   training_plans   tp ON e.plan_id      = tp.id
+        WHERE  tp.user_id       = v_uid
+          AND  ws.user_id       = v_uid
+          AND  ws.completed_at  IS NOT NULL
+          AND  e.exercise_type  = 'strength'
+          AND  ws.completed_at  >= NOW() - INTERVAL '6 months'
+        GROUP  BY e.id, e.name, e.primary_muscles, e.secondary_muscles,
+                  e.movement_pattern, ws.id, ws.completed_at
+        ORDER  BY ws.completed_at DESC
+        LIMIT  3000
+      ) t
+    ), '[]'::JSON)
+
+  ) INTO result;
+
+  RETURN result;
+END;
+$$;
+
+
 -- =============================================================================
 -- 6. PERMISSION GRANTS / REVOKES
 -- =============================================================================
@@ -657,6 +755,7 @@ REVOKE EXECUTE ON FUNCTION public.get_workout_stats()                           
 REVOKE EXECUTE ON FUNCTION public.get_exercise_history(UUID)                    FROM anon;
 REVOKE EXECUTE ON FUNCTION public.get_monthly_muscle_volume(INTEGER, INTEGER)   FROM anon;
 REVOKE EXECUTE ON FUNCTION public.get_lift_progression()                        FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_coach_data()                               FROM anon;
 
 
 -- =============================================================================

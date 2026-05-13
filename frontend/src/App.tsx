@@ -18,6 +18,7 @@ const SettingsPage       = lazy(() => import('./pages/SettingsPage'));
 const SessionPage        = lazy(() => import('./pages/SessionPage'));
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
 const ExerciseDetailPage = lazy(() => import('./pages/ExerciseDetailPage'));
+const CoachPage          = lazy(() => import('./pages/CoachPage'));
 
 function AuthEventHandler() {
   const navigate = useNavigate();
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="/plan/:planId/edit"   element={<RequireAuth><EditPlanPage /></RequireAuth>} />
           <Route path="/workout/:planId"     element={<RequireAuth><WorkoutPage /></RequireAuth>} />
           <Route path="/progress"            element={<RequireAuth><ProgressPage /></RequireAuth>} />
+          <Route path="/coach"               element={<RequireAuth><CoachPage /></RequireAuth>} />
           <Route path="/settings"            element={<RequireAuth><SettingsPage /></RequireAuth>} />
           <Route path="/session/:sessionId"    element={<RequireAuth><SessionPage /></RequireAuth>} />
           <Route path="/exercise/:exerciseId"  element={<RequireAuth><ExerciseDetailPage /></RequireAuth>} />

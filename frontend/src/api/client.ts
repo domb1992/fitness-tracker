@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { TrainingPlan, WorkoutSession, Stats, Exercise, ExerciseHistory, MuscleVolume, LiftProgressionEntry } from '../types';
+import { TrainingPlan, WorkoutSession, Stats, Exercise, ExerciseHistory, MuscleVolume, LiftProgressionEntry, CoachData } from '../types';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -161,6 +161,16 @@ export const exercisesApi = {
     const { data, error } = await supabase.rpc('get_lift_progression');
     if (error) throw error;
     return (data as LiftProgressionEntry[]) ?? [];
+  },
+
+  getCoachData: async (): Promise<CoachData> => {
+    const { data, error } = await supabase.rpc('get_coach_data');
+    if (error) throw error;
+    const raw = data as any;
+    return {
+      sessions:          (raw?.sessions          ?? []) as CoachData['sessions'],
+      exercise_sessions: (raw?.exercise_sessions ?? []) as CoachData['exercise_sessions'],
+    };
   },
 };
 

@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useWorkoutStore } from '../store/store';
 
-const NAV_ROUTES = ['/dashboard', '/progress', '/settings'];
+const NAV_ROUTES = ['/dashboard', '/progress', '/coach', '/settings'];
 
 const HomeIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -16,6 +16,16 @@ const ChartIcon = ({ active }: { active: boolean }) => (
   <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={active ? 2.2 : 1.6} strokeLinecap="round" strokeLinejoin="round">
     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  </svg>
+);
+
+const CoachIcon = ({ active }: { active: boolean }) => (
+  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth={active ? 2.2 : 1.6} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/>
+    <line x1="9" y1="21" x2="15" y2="21"/>
+    <line x1="10" y1="17" x2="10" y2="21"/>
+    <line x1="14" y1="17" x2="14" y2="21"/>
   </svg>
 );
 
@@ -36,6 +46,7 @@ export default function BottomNav() {
   const NAV_ITEMS = [
     { path: '/dashboard', label: t('nav.home'),     Icon: HomeIcon  },
     { path: '/progress',  label: t('nav.progress'), Icon: ChartIcon },
+    { path: '/coach',     label: t('nav.coach'),    Icon: CoachIcon },
     { path: '/settings',  label: t('nav.profile'),  Icon: UserIcon  },
   ];
 

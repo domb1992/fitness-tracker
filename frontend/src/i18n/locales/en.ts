@@ -28,6 +28,7 @@ const en = {
   nav: {
     home: 'Home',
     progress: 'Progress',
+    coach: 'Coach',
     profile: 'Profile',
   },
 
@@ -333,6 +334,41 @@ const en = {
     reps: 'REPS',
     noWeight: 'No weight',
     noData: 'No data yet — complete a workout to see progress',
+  },
+
+  // ─── Performance Coach ─────────────────────────────────────────────────────
+  coach: {
+    pageLabel: 'Performance Coach',
+    heading: 'Coach',
+    refresh: 'Refresh insights',
+    retry: 'Retry',
+    updated: 'Updated',
+    insights: 'AI Insights',
+    insightCount: '{{count}} insights',
+    insightCount_plural: '{{count}} insights',
+    noInsights: 'No insights yet',
+    noInsightsDesc: 'All metrics look balanced — complete more workouts for detailed coaching.',
+    noInsightsInCategory: 'No insights in this category',
+    notEnoughData: 'Not enough data yet',
+    notEnoughDataDesc: 'Complete at least 3 workouts to unlock your Performance Coach insights.',
+    scoreConsistency: 'Consistency',
+    scoreVolume: 'Volume',
+    scoreBalance: 'Balance',
+    weeklyActivity: 'Weekly sessions',
+    last8Weeks: 'last 8 weeks',
+    qualityInsufficient: '● Collecting data',
+    qualityLimited: '● Limited data',
+    qualityGood: '● Good data',
+    qualityExcellent: '● Excellent data',
+    filter: {
+      all: 'All',
+      pr: 'PRs',
+      progression: 'Progress',
+      consistency: 'Consistency',
+      volume: 'Volume',
+      balance: 'Balance',
+      recovery: 'Recovery',
+    },
   },
 
   // ─── Errors ────────────────────────────────────────────────────────────────

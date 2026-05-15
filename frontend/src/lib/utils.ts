@@ -23,13 +23,20 @@ export function fmtDuration(s: number | null) {
 /**
  * Returns a human-readable relative time string (e.g., "Just now", "2d ago")
  */
-export function timeAgo(dateStr: string) {
+export function timeAgo(dateStr: string, t?: (key: string, opts?: Record<string, unknown>) => string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60)     return 'Just now';
-  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  if (!t) {
+    if (diff < 60)     return 'Just now';
+    if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+    return new Date(dateStr).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  }
+  if (diff < 60)     return t('time.justNow');
+  if (diff < 3600)   return t('time.minutesAgo', { count: Math.floor(diff / 60) });
+  if (diff < 86400)  return t('time.hoursAgo', { count: Math.floor(diff / 3600) });
+  if (diff < 604800) return t('time.daysAgo', { count: Math.floor(diff / 86400) });
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 /**

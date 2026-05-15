@@ -373,6 +373,37 @@ const de: Translations = {
     },
   },
 
+  // ─── Time ─────────────────────────────────────────────────────────────────
+  time: {
+    justNow: 'Gerade eben',
+    minutesAgo: 'vor {{count}}m',
+    hoursAgo: 'vor {{count}}h',
+    daysAgo: 'vor {{count}}T',
+  },
+
+  // ─── Muscles ──────────────────────────────────────────────────────────────
+  muscles: {
+    'Chest': 'Brust',
+    'Upper Chest': 'Obere Brust',
+    'Back': 'Rücken',
+    'Latissimus': 'Latissimus',
+    'Trapezius': 'Trapezius',
+    'Rhomboids': 'Rhomboiden',
+    'Rear Delts': 'Hintere Schulter',
+    'Front Delts': 'Vordere Schulter',
+    'Side Delts': 'Seitl. Schulter',
+    'Biceps': 'Bizeps',
+    'Triceps': 'Trizeps',
+    'Forearms': 'Unterarme',
+    'Abs': 'Bauch',
+    'Obliques': 'Obliques',
+    'Lower Back': 'Unterer Rücken',
+    'Glutes': 'Gesäß',
+    'Quadriceps': 'Quadrizeps',
+    'Hamstrings': 'Beinbeuger',
+    'Calves': 'Waden',
+  },
+
   // ─── Errors ────────────────────────────────────────────────────────────────
   errors: {
     somethingWrong: 'Etwas ist schiefgelaufen',

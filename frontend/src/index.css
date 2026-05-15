@@ -72,8 +72,8 @@
   --r-full: 999px;
 
   /* ── Typography ──────────────────────────────────────────────────────────── */
-  --sans: "Space Grotesk", "Inter", -apple-system, system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "Roboto", system-ui, sans-serif;
+  --mono: "Roboto Mono", ui-monospace, monospace;
 
   /* ── Motion ──────────────────────────────────────────────────────────────── */
   --ease:          cubic-bezier(0.4, 0, 0.2, 1);

@@ -43,7 +43,7 @@ export const AllSessionsSheet: React.FC<AllSessionsSheetProps> = ({
                 {s.plan_name}
               </div>
               <Typography variant="mono" className="mt-1 normal-case text-[9px] opacity-70 block">
-                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
+                {timeAgo(s.completed_at!, t)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
               </Typography>
             </div>
             <svg

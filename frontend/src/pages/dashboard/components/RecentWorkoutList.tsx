@@ -87,7 +87,7 @@ export const RecentWorkoutList: React.FC<RecentWorkoutListProps> = ({
                 marginTop: 4, fontFamily: 'var(--mono)', fontSize: 9,
                 letterSpacing: '0.04em', color: 'var(--ink-3)',
               }}>
-                {timeAgo(s.completed_at!)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
+                {timeAgo(s.completed_at!, t)} · {fmtDuration(s.duration_seconds)} · {t('common.sets', { count: s.total_sets ?? 0 })}
               </div>
             </button>
             <button

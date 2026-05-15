@@ -9,12 +9,12 @@ interface Props {
 }
 
 export const ExerciseInfoPanel: React.FC<Props> = ({ exercise }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const [contentH, setContentH] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const guide = getExerciseGuide(exercise);
+  const guide = getExerciseGuide(exercise, i18n.language);
   const { primary, secondary } = resolveExerciseMuscles(exercise);
 
   const hasMuscles = primary.length > 0 || secondary.length > 0;

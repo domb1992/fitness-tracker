@@ -371,6 +371,37 @@ const en = {
     },
   },
 
+  // ─── Time ─────────────────────────────────────────────────────────────────
+  time: {
+    justNow: 'Just now',
+    minutesAgo: '{{count}}m ago',
+    hoursAgo: '{{count}}h ago',
+    daysAgo: '{{count}}d ago',
+  },
+
+  // ─── Muscles ──────────────────────────────────────────────────────────────
+  muscles: {
+    'Chest': 'Chest',
+    'Upper Chest': 'Upper Chest',
+    'Back': 'Back',
+    'Latissimus': 'Latissimus',
+    'Trapezius': 'Trapezius',
+    'Rhomboids': 'Rhomboids',
+    'Rear Delts': 'Rear Delts',
+    'Front Delts': 'Front Delts',
+    'Side Delts': 'Side Delts',
+    'Biceps': 'Biceps',
+    'Triceps': 'Triceps',
+    'Forearms': 'Forearms',
+    'Abs': 'Abs',
+    'Obliques': 'Obliques',
+    'Lower Back': 'Lower Back',
+    'Glutes': 'Glutes',
+    'Quadriceps': 'Quadriceps',
+    'Hamstrings': 'Hamstrings',
+    'Calves': 'Calves',
+  },
+
   // ─── Errors ────────────────────────────────────────────────────────────────
   errors: {
     somethingWrong: 'Something went wrong',

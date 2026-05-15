@@ -110,7 +110,7 @@ export const ProgramList: React.FC<ProgramListProps> = ({ plans }) => {
                     fontFamily: 'var(--mono)', fontSize: 9,
                     color: 'var(--ink-3)',
                   }}>
-                    {plan.last_used ? timeAgo(plan.last_used) : t('common.never')}
+                    {plan.last_used ? timeAgo(plan.last_used, t) : t('common.never')}
                   </span>
                 </div>
               </button>

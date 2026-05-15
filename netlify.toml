@@ -1,11 +1,33 @@
 [build]
   base    = "frontend"
-  command = "npm install && npm run build"
+  command = "npm install && npm run pwa-gen && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
 
+# Service worker must never be served from cache — browsers need to fetch it
+# fresh on every visit to detect updates.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma        = "no-cache"
+
+# Workbox runtime chunk (bootstraps the SW)
+[[headers]]
+  for = "/workbox-*.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma        = "no-cache"
+
+# Web App Manifest — short TTL so icon/name changes propagate quickly
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# SPA fallback — all routes serve index.html
 [[redirects]]
   from   = "/*"
   to     = "/index.html"

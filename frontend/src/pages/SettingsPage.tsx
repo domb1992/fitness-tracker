@@ -21,9 +21,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-const LOCALE_OPTIONS: { value: SupportedLocale; flag: string }[] = [
-  { value: 'en', flag: '🇬🇧' },
-  { value: 'de', flag: '🇩🇪' },
+const LOCALE_OPTIONS: { value: SupportedLocale }[] = [
+  { value: 'en' },
+  { value: 'de' },
 ];
 
 export default function SettingsPage() {
@@ -243,13 +243,12 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="seg-ctrl">
-              {LOCALE_OPTIONS.map(({ value, flag }) => (
+              {LOCALE_OPTIONS.map(({ value }) => (
                 <button
                   key={value}
                   className={`seg-btn flex items-center gap-1.5 px-3 h-8 ${locale === value ? 'active' : ''}`}
                   onClick={() => setLocalePreference(value)}
                 >
-                  <span style={{ fontSize: 14, lineHeight: 1 }}>{flag}</span>
                   {value === 'en' ? t('settings.english') : t('settings.german')}
                 </button>
               ))}

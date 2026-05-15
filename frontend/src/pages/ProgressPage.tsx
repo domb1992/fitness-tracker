@@ -505,7 +505,7 @@ export default function ProgressPage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {topMuscles.map((mv, i) => (
-                <VolumeBar key={mv.muscle} label={mv.muscle} value={mv.weighted_sets} max={volumeMax} isTop={i === 0} />
+                <VolumeBar key={mv.muscle} label={t(`muscles.${mv.muscle}`, mv.muscle)} value={mv.weighted_sets} max={volumeMax} isTop={i === 0} />
               ))}
             </div>
           )}

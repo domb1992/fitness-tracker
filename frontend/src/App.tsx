@@ -2,9 +2,10 @@ import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, useThemeStore } from './store/store';
 import { supabase } from './lib/supabase';
-import ActiveWorkoutBar from './components/ActiveWorkoutBar';
-import BottomNav        from './components/BottomNav';
-import ErrorBoundary    from './components/ErrorBoundary';
+import ActiveWorkoutBar  from './components/ActiveWorkoutBar';
+import BottomNav         from './components/BottomNav';
+import ErrorBoundary     from './components/ErrorBoundary';
+import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
 
 // Route-based code splitting — each page loads only when first visited
 const AuthPage           = lazy(() => import('./pages/AuthPage'));
@@ -88,6 +89,7 @@ export default function App() {
         <BottomNav />
         <AuthEventHandler />
       </BrowserRouter>
+      <PWAUpdatePrompt />
     </div>
     </ErrorBoundary>
   );

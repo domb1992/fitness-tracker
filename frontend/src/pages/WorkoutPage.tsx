@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { plansApi, sessionsApi } from '../api/client';
@@ -32,6 +32,11 @@ export default function WorkoutPage() {
   const isOnline     = useOnlineStatus();
   const elapsedClock = useWorkoutClock(startedAt);  // shared hook
 
+  // Prevents the init effect from re-running after clearWorkout() is called
+  // (clearWorkout resets sessionId/exercises, which would re-trigger the effect
+  // while the URL is still /workout/:planId, causing a ghost session to be created)
+  const finishingRef = useRef(false);
+
   const [loading,     setLoading]     = useState(false);
   const [completing,  setCompleting]  = useState(false);
   const [error,       setError]       = useState('');
@@ -45,6 +50,8 @@ export default function WorkoutPage() {
   }, [syncPending, navigate]);
 
   useEffect(() => {
+    // Guard: do not (re-)start a workout if the user is finishing/abandoning one.
+    if (finishingRef.current) return;
     if (sessionId && planId && exercises.length > 0) return;
     if (!planId) { navigate('/dashboard', { replace: true }); return; }
     setLoading(true);
@@ -93,6 +100,8 @@ export default function WorkoutPage() {
     if (!sessionId || !startedAt) return;
 
     if (!isOnline) {
+      // Mark as finishing BEFORE touching store so the init effect won't re-run
+      finishingRef.current = true;
       setSyncPending(true);
       setShowConfirm(false);
       navigate('/dashboard', { replace: true });
@@ -112,6 +121,10 @@ export default function WorkoutPage() {
     );
     try {
       await sessionsApi.complete(sessionId, { durationSeconds, setLogs });
+      // Set BEFORE clearWorkout: clearWorkout() resets sessionId/exercises which
+      // re-triggers the init effect while the URL is still /workout/:planId.
+      // Without this flag that effect would immediately create a new session.
+      finishingRef.current = true;
       clearWorkout();
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
@@ -299,7 +312,7 @@ export default function WorkoutPage() {
         onConfirmSave={confirmComplete}
         showAbandon={showAbandon}
         onAbandonClose={() => setShowAbandon(false)}
-        onAbandonExit={() => { clearWorkout(); navigate('/dashboard', { replace: true }); }}
+        onAbandonExit={() => { finishingRef.current = true; clearWorkout(); navigate('/dashboard', { replace: true }); }}
         isCompleting={completing}
         doneCount={doneCount}
         totalSets={totalSets}

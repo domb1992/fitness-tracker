@@ -359,7 +359,7 @@ export default function SettingsPage() {
             fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.08em',
             color: 'var(--ink-4)', opacity: 0.4, textTransform: 'uppercase',
           }}>
-            {t('settings.version', { version: __APP_VERSION__ })}
+            {`v${__APP_VERSION__} · ${__BUILD_DATE__}`}
           </span>
         </div>
 

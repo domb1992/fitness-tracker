@@ -2,11 +2,28 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { resolve } from 'path';
+import { writeFileSync } from 'fs';
 import pkg from './package.json';
+
+// Writes dist/version.json after every production build.
+// This file is intentionally NOT in the SW precache glob (no .json pattern),
+// so it is always fetched fresh from the network and can be used to detect
+// when a new deploy is live before the service worker has picked it up.
+const generateVersionJson = {
+  name: 'generate-version-json',
+  writeBundle() {
+    const buildDate = new Date().toISOString().split('T')[0];
+    writeFileSync(
+      resolve(__dirname, 'dist/version.json'),
+      JSON.stringify({ version: pkg.version, buildDate, buildTimestamp: new Date().toISOString() })
+    );
+  },
+};
 
 export default defineConfig({
   plugins: [
     react(),
+    generateVersionJson,
     VitePWA({
       registerType: 'prompt',
       // SW registration handled by the PWAUpdatePrompt component via useRegisterSW
@@ -115,6 +132,8 @@ export default defineConfig({
     alias: { '@': resolve(__dirname, 'src') },
   },
   define: {
+    // Baked in at build time — used for display and version.json comparison
     __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_DATE__:  JSON.stringify(new Date().toISOString().split('T')[0]),
   },
 });

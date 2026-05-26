@@ -1,20 +1,72 @@
+import { useEffect, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export function PWAUpdatePrompt() {
+  const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+
   const {
     needRefresh:        [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegistered(registration) {
-      // Poll for updates every hour so long-running sessions still get prompted
-      if (registration) {
-        setInterval(() => registration.update(), 60 * 60 * 1000);
-      }
+      if (!registration) return;
+      registrationRef.current = registration;
+
+      // Poll every 15 minutes so long-running sessions still get prompted
+      setInterval(() => registration.update(), 15 * 60 * 1000);
     },
     onRegisterError(err) {
       console.warn('[PWA] Service worker registration failed:', err);
     },
   });
+
+  // Trigger a SW update check whenever the user returns to the app tab.
+  // This catches the common case where the user had the app in the background
+  // while a new version was deployed.
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && registrationRef.current) {
+        registrationRef.current.update().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Secondary version check via version.json (fetched fresh from network,
+  // not cached by the SW). Detects new deploys even before the SW has
+  // had a chance to install the updated assets.
+  useEffect(() => {
+    const triggerSWUpdate = async () => {
+      try {
+        const reg = registrationRef.current
+          ?? await navigator.serviceWorker?.getRegistration('/');
+        if (reg) reg.update().catch(() => {});
+      } catch {}
+    };
+
+    const checkVersionJson = async () => {
+      try {
+        const res = await fetch(`/version.json?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (!res.ok) return;
+        const data = await res.json() as { version: string };
+        if (data.version !== __APP_VERSION__) {
+          // New deploy detected — nudge the SW to pick up the new assets
+          triggerSWUpdate();
+        }
+      } catch {
+        // ignore fetch errors (offline, etc.)
+      }
+    };
+
+    // Check on mount and every 5 minutes
+    checkVersionJson();
+    const interval = setInterval(checkVersionJson, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!needRefresh) return null;
 

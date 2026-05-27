@@ -742,6 +742,75 @@ END;
 $$;
 
 
+-- -----------------------------------------------------------------------------
+-- get_export_data
+-- Returns all completed workout sessions with per-set exercise logs.
+-- Used by the AI Export feature. No auth tokens or sensitive data included.
+-- Sessions ordered newest-first; sets ordered by exercise_order then set_number.
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION get_export_data()
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE
+SECURITY INVOKER
+SET search_path = public
+AS $$
+DECLARE
+  v_uid UUID := auth.uid();
+BEGIN
+  RETURN COALESCE((
+    SELECT jsonb_agg(sess_obj ORDER BY (sess_obj ->> 'completed_at') DESC)
+    FROM (
+      SELECT jsonb_build_object(
+        'plan_name',        tp.name,
+        'started_at',       ws.started_at,
+        'completed_at',     ws.completed_at,
+        'duration_seconds', ws.duration_seconds,
+        'notes',            ws.notes,
+        'exercises', COALESCE((
+          SELECT jsonb_agg(ex_obj ORDER BY (ex_obj ->> 'exercise_order')::INT)
+          FROM (
+            SELECT jsonb_build_object(
+              'exercise_order',    e.exercise_order,
+              'exercise_name',     e.name,
+              'exercise_type',     e.exercise_type,
+              'primary_muscles',   to_jsonb(e.primary_muscles),
+              'secondary_muscles', to_jsonb(e.secondary_muscles),
+              'movement_pattern',  e.movement_pattern,
+              'equipment',         e.equipment,
+              'sets', (
+                SELECT COALESCE(jsonb_agg(
+                  jsonb_build_object(
+                    'set_number',     sl.set_number,
+                    'weight_kg',      sl.weight_kg,
+                    'reps_completed', sl.reps_completed,
+                    'notes',          sl.notes
+                  ) ORDER BY sl.set_number
+                ), '[]'::JSONB)
+                FROM set_logs sl
+                WHERE sl.session_id  = ws.id
+                  AND sl.exercise_id = e.id
+              )
+            ) AS ex_obj
+            FROM (
+              SELECT DISTINCT sl2.exercise_id
+              FROM set_logs sl2
+              WHERE sl2.session_id = ws.id
+            ) distinct_exs
+            JOIN exercises e ON e.id = distinct_exs.exercise_id
+          ) ex_rows
+        ), '[]'::JSONB)
+      ) AS sess_obj
+      FROM workout_sessions ws
+      JOIN training_plans tp ON tp.id = ws.plan_id
+      WHERE ws.user_id      = v_uid
+        AND ws.completed_at IS NOT NULL
+    ) session_rows
+  ), '[]'::JSONB);
+END;
+$$;
+
+
 -- =============================================================================
 -- 6. PERMISSION GRANTS / REVOKES
 -- =============================================================================
@@ -755,7 +824,8 @@ REVOKE EXECUTE ON FUNCTION public.get_workout_stats()                           
 REVOKE EXECUTE ON FUNCTION public.get_exercise_history(UUID)                    FROM anon;
 REVOKE EXECUTE ON FUNCTION public.get_monthly_muscle_volume(INTEGER, INTEGER)   FROM anon;
 REVOKE EXECUTE ON FUNCTION public.get_lift_progression()                        FROM anon;
-REVOKE EXECUTE ON FUNCTION public.get_coach_data()                               FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_coach_data()                              FROM anon;
+REVOKE EXECUTE ON FUNCTION public.get_export_data()                             FROM anon;
 
 
 -- =============================================================================

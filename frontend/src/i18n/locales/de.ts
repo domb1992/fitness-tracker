@@ -110,6 +110,63 @@ const de: Translations = {
     languageDesc: 'Anzeigesprache der App',
     english: 'English',
     german: 'Deutsch',
+    dataAi: 'Daten & KI',
+    aiExportTitle: 'KI-Export',
+    aiExportDesc: 'Alle Trainingsdaten für KI-Analyse exportieren',
+  },
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+  export: {
+    pageLabel: 'KI-Tools',
+    heading: 'KI-Export',
+    subtitle: 'Exportiere deine komplette Trainingshistorie für eine tiefe KI-Analyse.',
+
+    sectionGenerate: 'Was du bekommst',
+    featureList: [
+      'Alle Workouts mit Gewicht, Wiederholungen & Volumen pro Satz',
+      'Progressive-Overload-Trends & 1RM-Schätzungen',
+      'Plateau- & Stagnationserkennung',
+      'Muskelbalance- & Imbalance-Analyse',
+      'Konsistenz-, Volumen- & Erholungsindikatoren',
+      'Professioneller KI-Prompt zum sofortigen Einfügen',
+    ],
+    generate:   'Export erstellen',
+    generating: 'Export wird erstellt…',
+    regenerate: 'Neu generieren',
+
+    sectionOverview:  'Export-Übersicht',
+    sectionHighlights:'Wichtige Erkenntnisse',
+    sectionDownload:  'Download',
+    sectionAiPrompt:  'KI-Analyse-Prompt',
+
+    statWorkouts:   'Einheiten',
+    statSets:       'Sätze gesamt',
+    statVolume:     'Gesamtvolumen',
+    statAvgFreq:    'Ø / Woche',
+    statFirstDate:  'Erste Einheit',
+    statLastDate:   'Letzte Einheit',
+
+    scoreConsistency: 'Konsistenz',
+    scoreVolume:      'Volumen',
+    scoreBalance:     'Balance',
+
+    downloadJson:     'JSON herunterladen',
+    downloadJsonDesc: 'Strukturierte Daten · alle Workouts · Analysen',
+    downloadCsv:      'CSV herunterladen',
+    downloadCsvDesc:  'Tabellenformat · eine Zeile pro Satz',
+    downloadTxt:      'Zusammenfassung herunterladen',
+    downloadTxtDesc:  'Leslicher Bericht · leicht einzufügen',
+
+    copyPrompt:   'KI-Analyse-Prompt kopieren',
+    promptCopied: 'Prompt kopiert!',
+    promptHint:   'Füge dies in Claude, ChatGPT oder eine andere KI ein. Dann den JSON-Export anhängen oder einfügen.',
+
+    copyJson:   'Vollständiges JSON kopieren',
+    jsonCopied: 'JSON kopiert!',
+
+    privacyNote: 'Keine Auth-Token, API-Schlüssel oder interne Datenbank-IDs enthalten. Der Export enthält nur Trainingsdaten.',
+
+    errorPrefix: 'Export fehlgeschlagen',
   },
 
   // ─── Dashboard ─────────────────────────────────────────────────────────────

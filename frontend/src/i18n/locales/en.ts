@@ -108,6 +108,63 @@ const en = {
     languageDesc: 'App display language',
     english: 'English',
     german: 'Deutsch',
+    dataAi: 'Data & AI',
+    aiExportTitle: 'AI Export',
+    aiExportDesc: 'Export all workout data for AI analysis',
+  },
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+  export: {
+    pageLabel: 'AI Tools',
+    heading: 'AI Export',
+    subtitle: 'Export your complete workout history for deep AI-powered fitness analysis.',
+
+    sectionGenerate: 'What you get',
+    featureList: [
+      'All workouts with per-set weights, reps & volume',
+      'Progressive overload trends & 1RM estimates',
+      'Plateau & stagnation detection',
+      'Muscle balance & imbalance analysis',
+      'Consistency, volume & recovery indicators',
+      'Ready-to-paste professional AI prompt',
+    ],
+    generate:   'Generate Export',
+    generating: 'Building export…',
+    regenerate: 'Regenerate',
+
+    sectionOverview:  'Export overview',
+    sectionHighlights:'Key findings',
+    sectionDownload:  'Download',
+    sectionAiPrompt:  'AI Analysis Prompt',
+
+    statWorkouts:   'Workouts',
+    statSets:       'Total sets',
+    statVolume:     'Total volume',
+    statAvgFreq:    'Avg / week',
+    statFirstDate:  'First workout',
+    statLastDate:   'Last workout',
+
+    scoreConsistency: 'Consistency',
+    scoreVolume:      'Volume',
+    scoreBalance:     'Balance',
+
+    downloadJson:     'Download JSON',
+    downloadJsonDesc: 'Structured data · all workouts · analytics',
+    downloadCsv:      'Download CSV',
+    downloadCsvDesc:  'Spreadsheet-ready · one row per set',
+    downloadTxt:      'Download Summary',
+    downloadTxtDesc:  'Human-readable report · easy to paste',
+
+    copyPrompt:   'Copy AI Analysis Prompt',
+    promptCopied: 'Prompt copied!',
+    promptHint:   'Paste this into Claude, ChatGPT or any AI. Then attach or paste the JSON export for best results.',
+
+    copyJson:   'Copy full JSON to clipboard',
+    jsonCopied: 'JSON copied!',
+
+    privacyNote: 'No auth tokens, API keys or internal database IDs are included. Your export contains only workout data.',
+
+    errorPrefix: 'Export failed',
   },
 
   // ─── Dashboard ─────────────────────────────────────────────────────────────

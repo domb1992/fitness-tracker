@@ -1,6 +1,41 @@
 import { supabase } from '../lib/supabase';
 import { TrainingPlan, WorkoutSession, Stats, Exercise, ExerciseHistory, MuscleVolume, LiftProgressionEntry, CoachData } from '../types';
 
+// ─── Raw shape returned by get_export_data RPC ────────────────────────────────
+export interface RawExportSetLog {
+  set_number: number;
+  weight_kg: number | null;
+  reps_completed: string | null;
+  notes: string;
+}
+
+export interface RawExportExercise {
+  exercise_order: number;
+  exercise_name: string;
+  exercise_type: string;
+  primary_muscles: string[];
+  secondary_muscles: string[];
+  movement_pattern: string;
+  equipment: string;
+  sets: RawExportSetLog[];
+}
+
+export interface RawExportSession {
+  plan_name: string;
+  started_at: string;
+  completed_at: string;
+  duration_seconds: number | null;
+  notes: string;
+  exercises: RawExportExercise[];
+}
+
+export interface RawExportData {
+  sessions: RawExportSession[];
+  lifts: LiftProgressionEntry[];
+  coachData: CoachData;
+  stats: Stats;
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const authApi = {
@@ -170,6 +205,40 @@ export const exercisesApi = {
     return {
       sessions:          (raw?.sessions          ?? []) as CoachData['sessions'],
       exercise_sessions: (raw?.exercise_sessions ?? []) as CoachData['exercise_sessions'],
+    };
+  },
+};
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+
+export const exportApi = {
+  /** Fetches all data required for the AI export in parallel. */
+  getAllData: async (): Promise<RawExportData> => {
+    const [sessionsResult, liftsResult, coachResult, statsResult] = await Promise.all([
+      supabase.rpc('get_export_data'),
+      supabase.rpc('get_lift_progression'),
+      supabase.rpc('get_coach_data'),
+      supabase.rpc('get_workout_stats'),
+    ]);
+
+    if (sessionsResult.error) throw sessionsResult.error;
+    if (liftsResult.error)    throw liftsResult.error;
+    if (coachResult.error)    throw coachResult.error;
+    if (statsResult.error)    throw statsResult.error;
+
+    const rawSessions = ((sessionsResult.data as any[]) ?? []) as RawExportSession[];
+    const rawLifts    = (liftsResult.data as any[]) ?? [] as LiftProgressionEntry[];
+    const rawCoach    = coachResult.data as any;
+    const rawStats    = statsResult.data as Stats;
+
+    return {
+      sessions:  rawSessions,
+      lifts:     rawLifts as LiftProgressionEntry[],
+      coachData: {
+        sessions:          (rawCoach?.sessions          ?? []) as CoachData['sessions'],
+        exercise_sessions: (rawCoach?.exercise_sessions ?? []) as CoachData['exercise_sessions'],
+      },
+      stats: rawStats,
     };
   },
 };

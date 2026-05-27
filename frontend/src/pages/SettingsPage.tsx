@@ -256,6 +256,56 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* AI Export */}
+        <div className="surface" style={{ padding: '18px 18px' }}>
+          <SectionLabel>{t('settings.dataAi')}</SectionLabel>
+          <button
+            onClick={() => navigate('/export')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              width: '100%', padding: '12px 14px',
+              background: 'var(--paper-2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--r-1)', cursor: 'pointer', textAlign: 'left',
+              transition: 'background var(--duration-fast) var(--ease)',
+            }}
+            className="active:scale-[0.98]"
+          >
+            {/* Icon */}
+            <div style={{
+              width: 38, height: 38, borderRadius: 'var(--r-1)',
+              background: 'oklch(0.55 0.2 130 / 0.12)',
+              border: '1px solid oklch(0.55 0.2 130 / 0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                stroke="var(--lime)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l1.9 5.7 5.7 1.9-5.7 1.9L12 18.3l-1.9-5.8L4.4 10.6l5.7-1.9z"/>
+                <path d="M5 3l.7 2.1 2.1.7-2.1.7L5 8.5 4.3 6.4 2.2 5.7l2.1-.7z"/>
+              </svg>
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                {t('settings.aiExportTitle')}
+              </div>
+              <div style={{
+                marginTop: 2, fontFamily: 'var(--mono)', fontSize: 9,
+                letterSpacing: '0.04em', color: 'var(--ink-4)',
+              }}>
+                {t('settings.aiExportDesc')}
+              </div>
+            </div>
+
+            {/* Arrow */}
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none"
+              stroke="var(--ink-4)" strokeWidth={2.2} strokeLinecap="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
         {/* Security */}
         <div className="surface" style={{ padding: '18px 18px' }}>
           <SectionLabel>{t('settings.security')}</SectionLabel>

@@ -20,6 +20,7 @@ const SessionPage        = lazy(() => import('./pages/SessionPage'));
 const UpdatePasswordPage = lazy(() => import('./pages/UpdatePasswordPage'));
 const ExerciseDetailPage = lazy(() => import('./pages/ExerciseDetailPage'));
 const CoachPage          = lazy(() => import('./pages/CoachPage'));
+const ExportPage         = lazy(() => import('./pages/ExportPage'));
 
 function AuthEventHandler() {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="/settings"            element={<RequireAuth><SettingsPage /></RequireAuth>} />
           <Route path="/session/:sessionId"    element={<RequireAuth><SessionPage /></RequireAuth>} />
           <Route path="/exercise/:exerciseId"  element={<RequireAuth><ExerciseDetailPage /></RequireAuth>} />
+          <Route path="/export"              element={<RequireAuth><ExportPage /></RequireAuth>} />
           <Route path="/update-password"       element={<UpdatePasswordPage />} />
           <Route path="*"                element={<Navigate to="/dashboard" replace />} />
         </Routes>

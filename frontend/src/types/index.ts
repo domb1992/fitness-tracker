@@ -218,6 +218,124 @@ export interface AnalyticsBreakdowns {
 
 export type DataQuality = 'insufficient' | 'limited' | 'good' | 'excellent';
 
+// ─── AI Export ────────────────────────────────────────────────────────────────
+
+/** One logged set, enriched with computed volume + estimated 1RM */
+export interface ExportSetLog {
+  set_number: number;
+  weight_kg: number | null;
+  reps: string | null;
+  volume_kg: number | null;      // weight_kg × reps (numeric only)
+  estimated_1rm: number | null;  // Epley: weight × (1 + reps/30), reps 1–20
+  notes: string;
+}
+
+export interface ExportExercise {
+  name: string;
+  exercise_type: 'strength' | 'warmup';
+  primary_muscles: string[];
+  secondary_muscles: string[];
+  movement_pattern: string;
+  equipment: string;
+  sets: ExportSetLog[];
+  total_sets: number;
+  total_volume_kg: number | null;
+  best_weight_kg: number | null;
+  best_estimated_1rm: number | null;
+}
+
+export interface ExportWorkout {
+  date: string;               // ISO timestamp of completion
+  workout_name: string;
+  duration_minutes: number | null;
+  total_strength_sets: number;
+  total_volume_kg: number | null;
+  notes: string;
+  exercises: ExportExercise[];
+}
+
+export interface ExportExerciseProgression {
+  exercise_name: string;
+  plan_name: string;
+  start_weight_kg: number;
+  current_weight_kg: number;
+  best_weight_kg: number | null;
+  total_gain_kg: number;
+  pct_change: number;
+  session_count: number;
+  first_logged: string;
+  last_logged: string;
+  weight_history: number[];   // per-session avg weights, chronological
+  plateau_detected: boolean;
+  trend: 'up' | 'down' | 'neutral';
+}
+
+export interface ExportAnalytics {
+  weekly_volume_sets: Record<string, number>;   // ISO week (Mon) → strength sets
+  weekly_workouts: Record<string, number>;      // ISO week (Mon) → session count
+  muscle_group_volume_sets: Record<string, number>;  // muscle → weighted sets (all-time)
+  avg_workouts_per_week_all_time: number;
+  avg_workouts_per_week_last_4w: number;
+  consistency_score: number;    // 0–100
+  volume_score: number;         // 0–100
+  balance_score: number;        // 0–100
+  push_sets_30d: number;
+  pull_sets_30d: number;
+  leg_sets_30d: number;
+  push_pct_30d: number;
+  pull_pct_30d: number;
+  leg_pct_30d: number;
+  push_pull_ratio_30d: number;
+  plateaus_detected: Array<{
+    exercise_name: string;
+    stuck_at_kg: number;
+    session_count: number;
+    last_logged: string;
+  }>;
+  strongest_progressions: Array<{
+    exercise_name: string;
+    total_gain_kg: number;
+    pct_change: number;
+    session_count: number;
+  }>;
+  weakest_progressions: Array<{
+    exercise_name: string;
+    pct_change: number;
+    trend: string;
+    note: string;
+  }>;
+  avg_days_between_workouts: number;
+  max_gap_days: number;
+  longest_streak_days: number;
+  muscle_imbalances: string[];
+}
+
+export interface ExportStatistics {
+  total_workouts: number;
+  total_volume_kg: number;
+  total_sets: number;
+  avg_workout_duration_minutes: number | null;
+  avg_workouts_per_week: number;
+  training_days_total: number;
+  first_workout: string | null;
+  last_workout: string | null;
+  consistency_score: number;
+  volume_score: number;
+  balance_score: number;
+  data_quality: DataQuality;
+}
+
+export interface FitTrackExport {
+  export_version: '1.0';
+  export_created_at: string;
+  date_range: { from: string | null; to: string | null };
+  profile: { name: string };
+  statistics: ExportStatistics;
+  workouts: ExportWorkout[];
+  exercise_progression: ExportExerciseProgression[];
+  analytics: ExportAnalytics;
+}
+
 export interface AnalyticsResult {
   scores:      AnalyticsScores;
   breakdowns:  AnalyticsBreakdowns;
